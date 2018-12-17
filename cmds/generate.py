@@ -296,6 +296,10 @@ class Generate():
             sys.stdout.write("Storing the created graph into a .graph (binary) file\n")
             PyntacleExporter.Binary(graph, output_path)
 
+        elif out_form == "json":
+            sys.stdout.write("Storing the created graph into a .json file\n")
+            PyntacleExporter.JSON(graph, output_path)
+
         if not self.args.no_plot and graph.vcount() < 1000:
             sys.stdout.write("Drawing Generated Graph\n")
             # generates plot directory

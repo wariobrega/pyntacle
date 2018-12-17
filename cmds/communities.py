@@ -29,6 +29,7 @@ from warnings import simplefilter
 from graph_operations.modules_finder import CommunityFinder
 from io_stream.exporter import PyntacleExporter
 from cmds.cmds_utils.plotter import PlotGraph
+from cmds.cmds_utils.reporter import *
 from io_stream.import_attributes import ImportAttributes
 from tools.modules_utils import ModuleUtils
 from tools.misc.graph_load import *
@@ -119,6 +120,9 @@ class Communities():
 
             else:
                 plot_size = (1600, 1600)
+
+        # initialize results dict
+        results = OrderedDict()
 
         if self.args.which == "fastgreedy":
             if self.args.weights is not None:
@@ -330,6 +334,17 @@ class Communities():
             sys.stdout.write(
                 "Storing the input graph with module labels into .graph file at path {}\n".format(
                     binary_path))
+
+        # Communities does not generate a proper text report, just a JSON one.
+        mods_list = []
+        for i, elem in enumerate(mods):
+            mods_list.append([str(i), ','.join(elem.vs["name"])])
+        r = pyntacleReporter(graph=graph)
+        results['algorithm'] = algorithm
+        results['communities'] = mods_list
+        r.create_report(report_type=ReportEnum.Communities, report=results)
+
+        r.write_json_report(report_dir=self.args.directory, report_dict=results)
 
         if not self.args.no_plot:
 

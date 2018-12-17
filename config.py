@@ -39,7 +39,7 @@ log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 format_dictionary = {"adjmat": "adjm", "edgelist": "egl", "sif": "sif", "dot": "dot", "bin": "graph", "adjm": "adjm",
                      "graph": "graph", "edgl": "egl", "egl": "egl", "binary": "bin", "adjacencymatrix": "adjm",
-                     "edge_list": "egl", "adjacency_matrix": "adjm"}
+                     "edge_list": "egl", "adjacency_matrix": "adjm", "json":"json"}
 report_format = {"tsv" : "tsv", "txt": "tsv", "csv" : "csv", "xlsx" : "xlsx", "xlx": "xlsx"}
 
 runtime_date = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")

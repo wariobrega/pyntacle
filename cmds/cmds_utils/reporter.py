@@ -31,6 +31,9 @@ from tools.enums import KpnegEnum, KpposEnum, ReportEnum
 from exceptions.wrong_argument_error import WrongArgumentError
 from tools.graph_utils import GraphUtils as gu # swiss knife for graph utilities
 from collections import OrderedDict
+import json
+from io_stream.exporter import PyntacleExporter
+from cmds.cmds_utils.html_template import html_template
 
 """ Utility to produce the report for global topology, local topology and modules """
 
@@ -68,7 +71,6 @@ class pyntacleReporter():
 
         if not isinstance(report, OrderedDict):
             raise ValueError("\"report\" must be an ordered Dictionary")
-
         self.report_type = report_type
         self.report = []
         self.report.append([" ".join(["pyntacle Report", self.dat])])
@@ -179,6 +181,68 @@ class pyntacleReporter():
 
         return report_path
 
+    def write_json_report(self, report_dir=None, report_dict=None):
+        """
+        Create a JSON version of the report, possibly appending data to already existing results.
+        :return:
+        """
+
+        plots_path = os.path.join(report_dir, 'pyntacle-plots')
+        json_report = os.path.join(plots_path, 'report.js')
+        json_graph = os.path.join(plots_path, 'graph.js')
+        index_path = os.path.join(plots_path, 'index.html')
+        if os.path.exists(json_report):
+            json_line = open(json_report).readlines()[0].split(' = ')[1]
+            print("LINEA", json_line)
+            with open(json_report, 'r') as f:
+                json_data = json.loads(json_line)
+        else:
+            json_data = {'Key-player': {'KP_greedy': {'2018-12-06-154510': {'F': 'WD,BM,HB', 'dF': 'WD,BM,HB', 'dR': 'KR,BM,NP', 'mreach': 'WS,PH,NP'}}}, 'Communities': {'fastgreedy': {'2018-12-07-145645': {0: 'HS,BR,WD,PS,WS,KR,GM,BS3,SF,JE,LR', 1: 'GS,DI,KA,DB,BW,PH,BM,HA,LK,CR,SR', 2: 'HB,TO,MJ,WL,CD,BS,NP,EE,BS2,MG'}}}}
+
+        print("EXTRACT JSON FROM HERE")
+        print(report_dict)
+        print(type(report_dict))
+        print(self.report_type)
+        print(self.dat)
+
+        if self.report_type == ReportEnum.KP_bruteforce or self.report_type == ReportEnum.KP_greedy:
+            json_data.setdefault("Key-player", {})
+            json_data["Key-player"].setdefault(str(self.report_type).split('.')[1], {})
+            json_data["Key-player"][str(self.report_type).split('.')[1]].setdefault(self.dat, {})
+            for k in report_dict:
+                json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k] = ','.join(report_dict[k][0])
+
+        if self.report_type == ReportEnum.Communities:
+            json_data.setdefault("Communities", {})
+            json_data["Communities"].setdefault(report_dict["algorithm"], {})
+            json_data["Communities"][report_dict["algorithm"]].setdefault(self.dat, {})
+            for i, k in enumerate(report_dict["communities"]):
+                json_data["Communities"][report_dict["algorithm"]][self.dat][i] = report_dict["communities"][i][1]
+
+        if self.report_type == ReportEnum.Set:
+            json_data.setdefault("Set", {})
+            json_data["Set"].setdefault(report_dict["algorithm"], {})
+            json_data["Set"][report_dict["algorithm"]].setdefault(self.dat, {})
+            json_data["Set"][report_dict["algorithm"]][self.dat] = report_dict[0]
+
+        #exporting results in json format
+        with open(json_report, 'w') as f:
+            f.write("var reportData = ")
+            json.dump(json_data, f, ensure_ascii=False)
+
+        #exporting graph in json format
+        PyntacleExporter.JSON(self.graph, json_graph, prefix="var graphData = ")
+
+        #print html_file
+        with open(index_path, 'w') as f:
+            f.write(html_template)
+
+
+
+
+
+
+
     def __local_report(self, reportdict:OrderedDict):
         """
         Fill the `report` object  with information regarding the metrics for each node (nodes must be specified in
@@ -198,12 +262,12 @@ class pyntacleReporter():
 
         self.report.append(["Results - Local Metrics for each Node in input"])
         self.report.append(["Node Name"] + [x for x in reportdict.keys()])
-        addendum = [] #list that will be added to the self.report object
+        addendum = []  # list that will be added to the self.report object
         for i, elem in enumerate(nodes):
             temp = []
-            temp.append(elem) #append the node names to the appendum
+            temp.append(elem)  # append the node names to the appendum
             for k in reportdict.keys():
-                temp.append(round(reportdict[k][i],5)) #append the corresponding value to the node name
+                temp.append(round(reportdict[k][i], 5))  # append the corresponding value to the node name
             addendum.append(temp)
         self.report = self.report + addendum
 
@@ -366,11 +430,13 @@ class pyntacleReporter():
         type of algorithm used
         :param reportdict: a dictionary from pyntacle communities
         """
-        self.report.append(["Results: Community finding in input graph"])
+        print("HERE")
+        print(reportdict)
+        self.report.append([" ".join(["pyntacle Report", self.dat])])
         self.report.append(["Algorithm:", reportdict["algorithm"]])
         self.report.append(["\n"])
         self.report.append(["Module", "Nodes", "Edges", "Components"])
-        del reportdict["algorithm"] #delete the dictionary algorithm
+        # del reportdict["algorithm"] #delete the dictionary algorithm
 
         for k in reportdict.keys():
             self.report.append([k, reportdict[k][0], reportdict[k][1], reportdict[k][2]])

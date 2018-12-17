@@ -145,6 +145,11 @@ class Convert():
                         os.path.abspath(self.args.input_file), output_path))
                 PyntacleExporter.Dot(graph, output_path)
 
+            elif out_form == "json":
+                sys.stdout.write(
+                    "Converting input file {0} to json file at path {1}\n".format(
+                        os.path.abspath(self.args.input_file), output_path))
+                PyntacleExporter.JSON(graph, output_path)
 
             elif out_form == "graph":
                 sys.stdout.write(

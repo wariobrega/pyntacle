@@ -415,6 +415,9 @@ class Set:
         set1_attr_dict = OrderedDict()
         set2_attr_dict = OrderedDict()
         setF_attr_dict = OrderedDict()
+        report_dict = OrderedDict()
+        report_dict['algorithm'] = self.args.which
+        report_dict[0] = {'nodes': ','.join(output_graph.vs["name"]), 'edges': output_graph.es["adjacent_nodes"]}
 
         if self.args.which == 'intersection':
             setF_attr_dict['\nCommon Nodes'] = 'Node names'#(len(intersection_set), ','.join(intersection_set))
@@ -422,7 +425,8 @@ class Set:
         reporter1.create_report(ReportEnum.Set, set1_attr_dict)
         reporter2.create_report(ReportEnum.Set, set2_attr_dict)
         reporter_final.create_report(ReportEnum.Set, setF_attr_dict)
-        
+
+
         reporter1.report[1] = ['\n--- Graph 1 ---']
         reporter2.report[1] = ['--- Graph 2 ---']
         del(reporter1.report[-1])
@@ -432,12 +436,13 @@ class Set:
         for e in reporter_final.report:
             if e[0] == 'Pyntacle Command:':
                 e[1] = e[1] + ' ' + self.args.which
-        
+
+
         reporter_final.report[0] = ['\n--- Resulting Graph ---']
         reporter1.report.extend(reporter2.report)
         reporter1.report.extend(reporter_final.report)
         reporter1.write_report(report_dir=self.args.directory, format=self.args.report_format)
-
+        reporter1.write_json_report(report_dir=self.args.directory, report_dict=report_dict)
         if not self.args.suppress_cursor:
             cursor.stop()
 

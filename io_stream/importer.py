@@ -175,8 +175,8 @@ class PyntacleImporter:
             
         else:
             adj = pd.read_csv(file, sep=sep, header=None, dtype=str)
-        
         adj.values.sort()
+
         adj = adj.drop_duplicates()
         adj.dropna(how="all", inplace=True) #remove all empty lines
 

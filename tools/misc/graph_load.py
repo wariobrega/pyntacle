@@ -42,6 +42,7 @@ def separator_detect(filename):
     """
     Uses csv.Sniffer to detect the delimiter in the
     first line of a table.
+    
     :param str filename: input file
     :return: the separator as a string
     """

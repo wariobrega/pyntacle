@@ -384,9 +384,10 @@ class KeyPlayer():
             self.logging.warning(
                 "A report with the same name ({}) already exists, overwriting it".format
                 (os.path.basename(report_path)))
-        
+
         r.write_report(report_dir=self.args.directory, format=self.args.report_format)
-        
+        r.write_json_report(report_dir=self.args.directory, report_dict=results)
+
         if self.args.save_binary:
             #reproduce octopus behaviour by adding kp information to the graph before saving it
             sys.stdout.write("Saving graph to a binary pickle file with \'.graph\' extension \n")

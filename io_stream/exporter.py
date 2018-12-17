@@ -32,6 +32,8 @@ from tools.misc.io_utils import *
 from config import *
 import pandas as pd
 import pickle
+import json
+
 
 class PyntacleExporter:
     """ export your igraph/Pyntacle object to a text file in the following formats:
@@ -228,3 +230,67 @@ class PyntacleExporter:
             os.path.abspath(file)))
 
         return None
+
+    @staticmethod
+    @check_graph_consistency
+    @output_file_checker
+    def JSON(graph, file=None, prefix=None):
+        """
+        Write the igraph.Graph object to a JSON file, compliant with Pyntacle viewer.
+        :param igraph.Graph graph: an `igraph.Graph` object obtained from Pyntacle. See `Pyntacle Minimum Requirements`
+        for the object description.
+        :param str file: a valid path to a file. If the directory is not specified, the current directory will be used.
+        :param str prefix: a string that is printed before the JSON string. Useful to assign the JSON dictionary to a
+        variable.
+        :return: None
+        """
+        nodes = []
+        edges = []
+
+        if not 'layout' in graph.attributes():
+            graph['layout'] = graph.layout_auto()
+
+        for v in graph.vs:
+            v_id = str(v.index)
+            print(v_id, v['name'])
+            v_attributes = v.attributes()
+            v_label = v_attributes["name"]
+            if not v_label:
+                v_label = v_id
+
+            v_size = v_attributes.pop('size', None)
+            if v_size:
+                v_size = float(v_size)
+            else:
+                v_size = 1
+            v_x = 0
+            v_y = 0
+            node = dict(id=v_id, label=v_label, size=v_size, x=v_x, y=v_y, attributes=v_attributes)
+            nodes.append(node)
+
+        for e in graph.es:
+            e_id = str(e.index)
+
+            e_source = str(e.source)
+            e_target = str(e.target)
+            e_attributes = e.attributes()
+            e_size = e_attributes.pop('size', None)
+            if e_size:
+                e_size = float(e_size)
+            edge = dict(id=e_id, source=e_source, target=e_target, size=e_size, attributes=e_attributes)
+            edges.append(edge)
+
+        print(nodes)
+        print(edges)
+        data = dict(nodes=nodes, edges=edges)
+        if file != None:
+            with open(file, 'w') as f:
+                if prefix != None:
+                    f.write(prefix)
+                json.dump(data, f, ensure_ascii=False)
+
+            sys.stdout.write("Graph successfully exported to JSON at path: {}\n".format(
+                os.path.abspath(file)))
+            return None
+        else:
+            return json.dumps(data)
