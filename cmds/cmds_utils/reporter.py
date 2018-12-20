@@ -188,6 +188,8 @@ class pyntacleReporter():
         """
 
         plots_path = os.path.join(report_dir, 'pyntacle-plots')
+        if not os.path.exists(plots_path):
+            os.makedirs(plots_path)
         json_report = os.path.join(plots_path, 'report.js')
         json_graph = os.path.join(plots_path, 'graph.js')
         index_path = os.path.join(plots_path, 'index.html')
@@ -209,8 +211,19 @@ class pyntacleReporter():
             json_data.setdefault("Key-player", {})
             json_data["Key-player"].setdefault(str(self.report_type).split('.')[1], {})
             json_data["Key-player"][str(self.report_type).split('.')[1]].setdefault(self.dat, {})
+            # multiple_sol
             for k in report_dict:
-                json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k] = ','.join(report_dict[k][0])
+                print(report_dict[k][0])
+
+                if self.report_type == ReportEnum.KP_greedy:
+                    json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k] = ','.join(report_dict[k][0])
+
+                elif self.report_type == ReportEnum.KP_bruteforce:
+                    json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k] = ';'.join(list(','.join(sol) for sol in report_dict[k][0]))
+
+                    # print(';'.join(list(','.join(sol) for sol in report_dict[k][0])))
+                    # print(sol.join(',') for sol in report_dict[k][0])
+            input()
 
         if self.report_type == ReportEnum.Communities:
             json_data.setdefault("Communities", {})

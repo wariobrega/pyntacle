@@ -101,14 +101,42 @@ $(function(){
     editTitle: false,
     expand: false,
     // unpin: false,
-    minWidth: 450,
-    minHeight: 150,
-    maxWidth: 600,
+    minWidth: 430,
+    minHeight: 110,
+    maxWidth: 430,
     maxHeight: 480,
     resize: "both"
 
   });
-  var positions = [10, 200, 390];
+
+  $('.controlspanel').lobiPanel({
+    reload: false,
+    close: false,
+    editTitle: false,
+    expand: false,
+    // unpin: false,
+    minWidth: 230,
+    minHeight: 315,
+    maxWidth: 230,
+    maxHeight: 315,
+    resize: "both"
+
+  });
+
+  $('.solutionspanel').lobiPanel({
+    reload: false,
+    editTitle: false,
+    expand: false,
+    // unpin: false,
+    minWidth: 330,
+    minHeight: 315,
+    maxWidth: 330,
+    maxHeight: 315,
+    resize: "both",
+
+
+  });
+  var positions = [10, 130, 250];
   if ($('#Key-player-results-pane').is(':visible')){
       var instancekp = $('#Key-player-results-pane').data('lobiPanel');
       instancekp.unpin();
@@ -116,15 +144,38 @@ $(function(){
       instancekp.enableResize();
   }
 
-  var instancecom = $('#Communities-results-pane').data('lobiPanel');
-  instancecom.unpin();
-  instancecom.setPosition(10, positions.shift());
-  instancecom.enableResize();
+  if ($('#Communities-results-pane').is(':visible')){
+    var instancecom = $('#Communities-results-pane').data('lobiPanel');
+    instancecom.unpin();
+    instancecom.setPosition(10, positions.shift());
+    instancecom.enableResize();
+  }
 
-  var instanceset = $('#Set-results-pane').data('lobiPanel');
-  instanceset.unpin();
-  instanceset.setPosition(10, positions.shift());
-  instanceset.enableResize();
+  if ($('#Set-results-pane').is(':visible')){
+    var instanceset = $('#Set-results-pane').data('lobiPanel');
+    instanceset.unpin();
+    instanceset.setPosition(10, positions.shift());
+    instanceset.enableResize();
+  }
+
+  var instancecontrols = $('#control-pane').data('lobiPanel');
+  instancecontrols.unpin();
+  instancecontrols.setPosition('right', 10)
+
+  var instancesolutionskp = $('#Key-player-solutions-pane').data('lobiPanel');
+  instancesolutionskp.unpin();
+  instancesolutionskp.setPosition(instancekp.getPosition().x+430, instancekp.getPosition().y);
+  instancesolutionskp.enableResize();
+
+  var instancesolutionscom = $('#Communities-solutions-pane').data('lobiPanel');
+  instancesolutionscom.unpin();
+  instancesolutionscom.setPosition(instancecom.getPosition().x+430, instancecom.getPosition().y);
+  instancesolutionscom.enableResize();
+
+  var instancesolutionsset = $('#Set-solutions-pane').data('lobiPanel');
+  instancesolutionsset.unpin();
+  instancesolutionsset.setPosition(instanceset.getPosition().x+430, instanceset.getPosition().y);
+  instancesolutionsset.enableResize();
 });
 
 </script>
@@ -146,12 +197,7 @@ $(function(){
 }
 </script>
 
-<script>
-  function popUp(arg){
-    console.log(arg);
-  }
 
-</script>
 
 <script>
   function fillDropdown(defaultkey, subkeys, dest){
@@ -177,8 +223,14 @@ $(function(){
 
 <script>
   function paintButtons(command, dict){
+      console.log("IN PAINT")
       console.log(command)
-      document.getElementById(command+'-buttons').innerHTML += '<button class="btn-success" >Show solutions</button>'
+      var solutions = JSON.stringify(dict).replace(/\\"/g, '"')
+
+      document.getElementById(command+'-buttons').innerHTML += '<button \
+            class="btn-success" type="button" onclick=\'popUp("'+command+'",'+solutions+')\'>\
+                Show solutions\
+            </button>'
 
       // var keys = Object.keys(dict);
       // console.log(keys)
@@ -187,6 +239,32 @@ $(function(){
       //     onclick="popUp('+dict[keys[i]]+')">'+keys[i]+'</button>'
       // }
   }
+</script>
+
+<script>
+  function popUp(arg,dict){
+    console.log(arg)
+    console.log(dict)
+    var instanceresults = $('#'+arg+'-results-pane').data('lobiPanel');
+    var instancesolutions = $('#'+arg+'-solutions-pane').data('lobiPanel');
+    instancesolutions.unpin();
+    instancesolutions.setPosition(instanceresults.getPosition().x+440, instanceresults.getPosition().y);
+    instancesolutions.enableResize();
+    $('#'+arg+'-solutions-pane').show();
+    $('#'+arg+'-solutions-body').empty()
+    for(key in dict){
+      $('#'+arg+'-solutions-body').append('<span class="metric">'+key+':</span>');
+      console.log(dict[key])
+      console.log("SPLIT:")
+      var splitsolutions = dict[key].split(';')
+      for(key2 in splitsolutions){
+        $('#'+arg+'-solutions-body').append('<span class="solution"\
+                onclick="onSearch(\''+splitsolutions[key2]+'\'.split(\',\'))"><u>'+splitsolutions[key2]+'</u></span>');
+      }
+      $('#'+arg+'-solutions-body').append('<br />');
+    }
+  }
+
 </script>
 </head>
 
@@ -217,11 +295,11 @@ $(function(){
             right: 10px;
             position: absolute;
             width: 230px;
-            background-color: rgb(249, 247, 237);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            /* background-color: rgb(249, 247, 237); */
+            box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3);
           }
           #control-pane > div {
-            margin: 10px;
+            /* margin: 10px; */
             overflow-x: auto;
           }
           input[type="range"] {
@@ -297,10 +375,10 @@ $(function(){
           }
           h2.underline {
             color: #437356;
-            background: #f4f0e4;
+            /* background: #f4f0e4; */
             margin: 0;
             border-radius: 2px;
-            padding: 8px 12px;
+            /* padding: 8px 12px; */
             font-weight: 700;
           }
           .hidden {
@@ -400,70 +478,115 @@ $(function(){
         <!-- A placeholder for the graph -->
         <div id="network-graph"></div>
 
-        <div id="control-pane" class="panel panel-default resultspanel">
-          <h2 class="underline">filters</h2>
+        <div id="control-pane" class="panel panel-default controlspanel">
+          <div class="panel-heading">
+              <div class="panel-title">
+                <h2 class="underline">filters</h2>
+              </div>
+          </div>
 
-          <div>
-            <h3>min degree <span id="min-degree-val">0</span></h3>
-            0 <input id="min-degree" type="range" min="0" max="0" value="0"> <span id="max-degree-value">0</span><br>
-          </div>
-          <div>
-            <h3>node search</h3>
-            <input type="text" id="labelInput" size="15">
-            <button id="searchSubmit">Search</button>
-            <span id=errorspace style="font-size: 12px; margin-top: 5px; color: red; display: block;"></span>
-          </div>
-          <span class="line"></span>
-          <div>
-            <button id="reset-btn">Reset filters</button>
-            <button id="export-btn">Export</button>
-          </div>
-          <div id="dump" class="hidden"></div>
-        </div>
 
-        <div class="row">
-            <div class="col-sm-6" style="width:450px; margin-left: 30px;">
-                  <div:hidden id="Key-player-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
+          <div class="panel-body">
+              <div>
+                <h3>min degree <span id="min-degree-val">0</span></h3>
+                  0 <input id="min-degree" type="range" min="0" max="0" value="0"> <span id="max-degree-value">0</span><br>
+              </div>
+
+              <div>
+                <h3>node search</h3>
+                <input type="text" id="labelInput" size="15">
+                <button id="searchSubmit">Search</button>
+                <span id=errorspace style="font-size: 12px; margin-top: 5px; color: red; display: block;"></span>
+              </div>
+              <span class="line"></span>
+              <div>
+                <button id="reset-btn">Reset filters</button>
+                <button id="export-btn">Export</button>
+              </div>
+              <div id="dump" class="hidden"></div>
+            </div>
+          </div>
+
+          <div class="row">
+              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
+                    <div id="Key-player-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <h2 class="underline">key-player</h2>
+                            </div>
+                        </div>
+                        <div id="Key-player-results-space" class="panel-body">
+                        </div>
+                    </div>
+              </div>
+              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
+                    <div id="Key-player-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">
                       <div class="panel-heading">
                           <div class="panel-title">
-                              <h4>Panel title</h4>
+                              <h2 class="underline">key-player solutions</h2>
                           </div>
                       </div>
-                      <div id="Key-player-results-space" class="panel-body">
+                      <div id="Key-player-solutions-body" class="panel-body">
+                      </div>
+                   </div>
+              </div>
+          </div>
+
+
+          <div class="row">
+              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
+                  <div id="Communities-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
+                      <div class="panel-heading">
+                          <div class="panel-title">
+                              <h2 class="underline">communities</h2>
+                          </div>
+                      </div>
+                      <div id="Communities-results-space" class="panel-body">
+                      </div>
+                  </div>
+              </div>
+
+              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
+                    <div id="Communities-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">
+                      <div class="panel-heading">
+                          <div class="panel-title">
+                              <h2 class="underline">communities solutions</h2>
+                          </div>
+                      </div>
+                      <div id="Communities-solutions-body" class="panel-body">
+                      </div>
+                   </div>
+              </div>
+
+          </div>
+
+
+          <div class="row">
+              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
+
+                  <div id="Set-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
+                      <div class="panel-heading">
+                          <div class="panel-title">
+                              <h2 class="underline">set</h2>
+                          </div>
+                      </div>
+                      <div id="Set-results-space" class="panel-body">
                       </div>
                   </div>
             </div>
-        </div>
 
-                  <div class="row">
-                      <div class="col-sm-6" style="width:450px; margin-left: 30px;">
-                          <div:hidden id="Communities-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
-                              <div class="panel-heading">
-                                  <div class="panel-title">
-                                      <h4>Panel title</h4>
-                                  </div>
-                              </div>
-                              <div id="Communities-results-space" class="panel-body">
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-
-
-                  <div class="row">
-                      <div class="col-sm-6" style="width:450px; margin-left: 30px;">
-
-                          <div:hidden id="Set-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
-                              <div class="panel-heading">
-                                  <div class="panel-title">
-                                      <h4>Panel title</h4>
-                                  </div>
-                              </div>
-                              <div id="Set-results-space" class="panel-body">
-                              </div>
-                          </div>
+            <div class="col-sm-6" style="width:450px; margin-left: 30px;">
+                  <div id="Set-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <h2 class="underline">set solutions</h2>
+                        </div>
                     </div>
-                </div>
+                    <div id="Set-solutions-body" class="panel-body">
+                    </div>
+                 </div>
+            </div>
+        </div>
       <!-- <div id="results-pane" class="panel panel-default">
         <div class="panel-heading">
           <div class="panel-title">
@@ -944,12 +1067,18 @@ $(function(){
 
         if (document.getElementById('Key-player-results-pane') !== null){
           $('#Key-player-results-pane').hide();
+          $('#Key-player-solutions-pane').hide();
+
         }
         if (document.getElementById('Communities-results-pane') !== null){
           $('#Communities-results-pane').hide();
+          $('#Communities-solutions-pane').hide();
+
         }
         if (document.getElementById('Set-results-pane') !== null){
           $('#Set-results-pane').hide();
+          $('#Set-solutions-pane').hide();
+
         }
 
         // if (document.getElementById('Communities-results-pane') !== null){
@@ -966,7 +1095,7 @@ $(function(){
         for (var command in reportData){
           console.log("BUILDING "+ command)
           $('#'+command+'-results-pane').show();
-          document.getElementById(command+'-results-space').innerHTML += '<h1 class="command-header">'+command+'</h1><div class="buttons-div" id="'+command+'-section"></div>';
+          document.getElementById(command+'-results-space').innerHTML += '<div class="buttons-div" id="'+command+'-section"></div>';
 
           document.getElementById(command+'-section').innerHTML += '\
             <select \
@@ -1007,11 +1136,14 @@ $(function(){
           return a.options[a.selectedIndex].value
         }
         </script>
+
+
     </div>
 
 </body>
 
 </html>
+
 
 
 
