@@ -386,7 +386,7 @@ class KeyPlayer():
                 (os.path.basename(report_path)))
 
         r.write_report(report_dir=self.args.directory, format=self.args.report_format)
-        r.write_json_report(report_dir=self.args.directory, report_dict=results)
+        r.write_json_report(report_dir=self.args.directory, report_dict=results, suffix=graph["name"][0])
 
         if self.args.save_binary:
             #reproduce octopus behaviour by adding kp information to the graph before saving it
@@ -451,11 +451,11 @@ class KeyPlayer():
         if not self.args.no_plot and graph.vcount() < 1000:
     
             sys.stdout.write("Generating plots in {} format.\n".format(self.args.plot_format))
-            plot_dir = os.path.join(self.args.directory, "pyntacle-plots")
+            plot_dir = os.path.join(self.args.directory, "pyntacle-plots_"+graph["name"][0])
 
             if os.path.isdir(plot_dir):
                 self.logging.warning(
-                    "A directory named \"pyntacle-plots\" already exists, I may overwrite something in there")
+                    "A directory named \"pyntacle-plots_{}\" already exist, I may overwrite something in there".format(graph["name"][0]))
 
             else:
                 os.mkdir(plot_dir)

@@ -33,7 +33,7 @@ from tools.graph_utils import GraphUtils as gu # swiss knife for graph utilities
 from collections import OrderedDict
 import json
 from io_stream.exporter import PyntacleExporter
-from cmds.cmds_utils.html_template import html_template
+from cmds.cmds_utils.html_template import html_template, css_template
 
 """ Utility to produce the report for global topology, local topology and modules """
 
@@ -65,7 +65,8 @@ class pyntacleReporter():
         :param Report  report_type: one of the type onside the "Report" enumerator
         :param OrderedDict report: a dictionary containing all the information to be reported
         """
-
+        print("HERES REPORT")
+        print(report)
         if not isinstance(report_type, ReportEnum):
             raise TypeError("\"report_type\" must be on of the \"ReportEnum\" enumerators, {} found".format(type(report_type).__name__))
 
@@ -75,13 +76,15 @@ class pyntacleReporter():
         self.report = []
         self.report.append([" ".join(["pyntacle Report", self.dat])])
         self.report.append(["Quick Graph Overview"])
+        print(self.graph["name"])
         self.report.append(["graph name", ",".join(self.graph["name"])])
+        print("ALIVE")
+
         self.report.append(["components", len(self.graph.components())])
         self.report.append(["nodes", self.graph.vcount()])
         self.report.append(["edges", self.graph.ecount()])
         self.report.append(["\n"])
         self.report.append(["Pyntacle Command:", report_type.name])
-
         if report_type == ReportEnum.Local:
             self.__local_report(reportdict=report)
         elif report_type == ReportEnum.Global:
@@ -95,6 +98,7 @@ class pyntacleReporter():
         elif report_type == ReportEnum.Communities:
             self.__communities_report(reportdict=report)
         elif report_type == ReportEnum.Set:
+            print("GOT IT RIGHT")
             self.__set_report(reportdict=report)
         else:
             raise ValueError("Report specified does not exists")
@@ -181,25 +185,27 @@ class pyntacleReporter():
 
         return report_path
 
-    def write_json_report(self, report_dir=None, report_dict=None):
+    def write_json_report(self, report_dir=None, report_dict=None, suffix=None):
         """
         Create a JSON version of the report, possibly appending data to already existing results.
         :return:
         """
 
-        plots_path = os.path.join(report_dir, 'pyntacle-plots')
+        plots_path = os.path.join(report_dir, 'pyntacle-plots_'+suffix)
+
         if not os.path.exists(plots_path):
             os.makedirs(plots_path)
         json_report = os.path.join(plots_path, 'report.js')
         json_graph = os.path.join(plots_path, 'graph.js')
         index_path = os.path.join(plots_path, 'index.html')
+        index_css_path = os.path.join(plots_path, 'index.css')
         if os.path.exists(json_report):
             json_line = open(json_report).readlines()[0].split(' = ')[1]
             print("LINEA", json_line)
             with open(json_report, 'r') as f:
                 json_data = json.loads(json_line)
         else:
-            json_data = {'Key-player': {'KP_greedy': {'2018-12-06-154510': {'F': 'WD,BM,HB', 'dF': 'WD,BM,HB', 'dR': 'KR,BM,NP', 'mreach': 'WS,PH,NP'}}}, 'Communities': {'fastgreedy': {'2018-12-07-145645': {0: 'HS,BR,WD,PS,WS,KR,GM,BS3,SF,JE,LR', 1: 'GS,DI,KA,DB,BW,PH,BM,HA,LK,CR,SR', 2: 'HB,TO,MJ,WL,CD,BS,NP,EE,BS2,MG'}}}}
+            json_data = {}
 
         print("EXTRACT JSON FROM HERE")
         print(report_dict)
@@ -249,12 +255,8 @@ class pyntacleReporter():
         #print html_file
         with open(index_path, 'w') as f:
             f.write(html_template)
-
-
-
-
-
-
+        with open(index_css_path, 'w') as f:
+            f.write(css_template)
 
     def __local_report(self, reportdict:OrderedDict):
         """

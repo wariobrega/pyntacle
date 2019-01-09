@@ -344,15 +344,15 @@ class Communities():
         results['communities'] = mods_list
         r.create_report(report_type=ReportEnum.Communities, report=results)
 
-        r.write_json_report(report_dir=self.args.directory, report_dict=results)
+        r.write_json_report(report_dir=self.args.directory, report_dict=results, suffix=graph["name"][0])
 
         if not self.args.no_plot:
 
-            plot_dir = os.path.join(self.args.directory, "pyntacle-plots")
+            plot_dir = os.path.join(self.args.directory, "pyntacle-plots_"+graph["name"][0])
 
             if os.path.isdir(plot_dir):
                 self.logging.warning(
-                    "A directory named \"pyntacle-plots\" already exists, I may overwrite something in there")
+                    "A directory named \"pyntacle-plots_{}\" already exists, I may overwrite something in there".format(graph["name"][0]))
 
             else:
                 os.mkdir(plot_dir)

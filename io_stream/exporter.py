@@ -33,6 +33,7 @@ from config import *
 import pandas as pd
 import pickle
 import json
+import seaborn as sns
 
 
 class PyntacleExporter:
@@ -129,6 +130,7 @@ class PyntacleExporter:
         :param str file: a valid path to a file. If the directory is not specified, the current directory will be used.
         :return: None
         """
+
         pickle.dump(graph, open(file, "wb"))
         sys.stdout.write("Graph successfully exported to Binary at path: {}\n".format(
             os.path.abspath(file)))
@@ -250,10 +252,22 @@ class PyntacleExporter:
         if not 'layout' in graph.attributes():
             graph['layout'] = graph.layout_auto()
 
+        colorsdict = {}
+        palette = sns.color_palette("Dark2", 10).as_hex()
+
+        print(palette)
+        col_count = 0
         for v in graph.vs:
             v_id = str(v.index)
             print(v_id, v['name'])
             v_attributes = v.attributes()
+            print("ATTRIBUTI IN EXPORT")
+            parent = ','.join(v_attributes['__parent'])
+            if parent not in colorsdict:
+                colorsdict[parent] = palette[col_count]
+                col_count += 1
+
+            v_color = colorsdict[parent]
             v_label = v_attributes["name"]
             if not v_label:
                 v_label = v_id
@@ -265,7 +279,7 @@ class PyntacleExporter:
                 v_size = 1
             v_x = 0
             v_y = 0
-            node = dict(id=v_id, label=v_label, size=v_size, x=v_x, y=v_y, attributes=v_attributes)
+            node = dict(id=v_id, color=v_color, label=v_label, size=v_size, x=v_x, y=v_y, attributes=v_attributes)
             nodes.append(node)
 
         for e in graph.es:

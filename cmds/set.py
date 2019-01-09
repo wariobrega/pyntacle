@@ -186,7 +186,7 @@ class Set:
                                                                            self.args.input_file_2))
 
             output_graph = GraphOperations.union(graph1, graph2, self.args.output_file)
-            if all(len(x) <= 2 for x in output_graph.vs()["__parent"]):
+            if all(len(x) < 2 for x in output_graph.vs()["__parent"]):
                 sys.stdout.write(
                     "There were no common nodes when performing Graph union. Will return Two disjointed graphs.\n")
 
@@ -280,7 +280,7 @@ class Set:
             simplefilter("ignore", RuntimeWarning)
             PyntacleExporter.Dot(output_graph, output_path)
 
-        elif out_form == "bin":
+        elif out_form == "graph":
             sys.stdout.write("Storing the created graph into a .graph (binary) file\n")
             PyntacleExporter.Binary(output_graph, output_path)
 
@@ -290,11 +290,11 @@ class Set:
         # producing plots
         if not self.args.no_plot:
             # generates plot directory
-            plot_dir = os.path.join(self.args.directory, "pyntacle-plots")
+            plot_dir = os.path.join(self.args.directory, "pyntacle-plots"+"_"+graph1["name"][0]+"_"+graph2["name"][0])
 
             if os.path.isdir(plot_dir):
                 self.logging.warning(
-                    "A directory named \"pyntacle-plots\" already exists, I may overwrite something in there")
+                    "A directory named \"pyntacle-plots_{0}_{1}\" already exists, I may overwrite something in there".format(graph1["name"][0], graph2["name"][0]))
 
             else:
                 os.mkdir(plot_dir)
@@ -411,7 +411,11 @@ class Set:
         reporter1 = pyntacleReporter(graph=graph1)  # init reporter1
         reporter2 = pyntacleReporter(graph=graph2)  # init reporter2
         reporter_final = pyntacleReporter(graph=output_graph)
-        
+        both_graphs = GraphOperations.union(graph1, graph2, 'Both')
+        print(both_graphs.summary())
+        print(list(both_graphs.vs()))
+
+        reporter_both_graphs = pyntacleReporter(graph=both_graphs)
         set1_attr_dict = OrderedDict()
         set2_attr_dict = OrderedDict()
         setF_attr_dict = OrderedDict()
@@ -420,13 +424,22 @@ class Set:
         report_dict[0] = {'nodes': ','.join(output_graph.vs["name"]), 'edges': output_graph.es["adjacent_nodes"]}
 
         if self.args.which == 'intersection':
-            setF_attr_dict['\nCommon Nodes'] = 'Node names'#(len(intersection_set), ','.join(intersection_set))
+            setF_attr_dict['\nCommon Nodes'] = 'Node names'
             setF_attr_dict[len(intersection_set)] = ','.join(intersection_set)
+
+        print("ATTR DICTS")
+        print(set1_attr_dict)
+        print(set2_attr_dict)
+        print(setF_attr_dict)
+        input()
+        print("CREATE REPORT FOR 1")
         reporter1.create_report(ReportEnum.Set, set1_attr_dict)
+        print("CREATE REPORT FOR 2")
         reporter2.create_report(ReportEnum.Set, set2_attr_dict)
+        print("CREATE REPORT FOR FINAL")
         reporter_final.create_report(ReportEnum.Set, setF_attr_dict)
-
-
+        print("CREATE REPORT FOR BOTH")
+        reporter_both_graphs.create_report(ReportEnum.Set, OrderedDict())
         reporter1.report[1] = ['\n--- Graph 1 ---']
         reporter2.report[1] = ['--- Graph 2 ---']
         del(reporter1.report[-1])
@@ -442,7 +455,14 @@ class Set:
         reporter1.report.extend(reporter2.report)
         reporter1.report.extend(reporter_final.report)
         reporter1.write_report(report_dir=self.args.directory, format=self.args.report_format)
-        reporter1.write_json_report(report_dir=self.args.directory, report_dict=report_dict)
+        print("THIS IS REPORT DICt")
+        print(report_dict)
+        print("THIS IS BOTH GRAPHS")
+        print(both_graphs.summary())
+        input()
+
+        reporter_both_graphs.write_json_report(report_dir=self.args.directory, report_dict=report_dict, suffix=graph1["name"][0]+"_"+graph2["name"][0])
+
         if not self.args.suppress_cursor:
             cursor.stop()
 

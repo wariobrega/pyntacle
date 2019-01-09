@@ -36,7 +36,7 @@ html_template = u"""
   <meta name="author" content="SitePoint">
   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
   <link rel="stylesheet" href="http://pyntacle.css-mendel.it/css/viewer/lobipanel.css">
-  <link rel="stylesheet" href="test1.css">
+  <link rel="stylesheet" href="index.css">
 
 
 <script src="http://pyntacle.css-mendel.it/js/sigma/stopExecutionOnTimeout.js"></script>
@@ -225,17 +225,17 @@ $(function(){
   function paintButtons(command, dict){
       console.log("IN PAINT")
       console.log(command)
-      var solutions = JSON.stringify(dict).replace(/\\"/g, '"')
-
-      document.getElementById(command+'-buttons').innerHTML += '<button \
-            class="btn-success" type="button" onclick=\'popUp("'+command+'",'+solutions+')\'>\
-                Show solutions\
+      var solutions = JSON.stringify(dict).replace(/\\\\"/g, '"')
+      $("#"+command+"-buttons").html("");
+      document.getElementById(command+'-buttons').innerHTML += '<button \\
+            class="btn-success" type="button" onclick=\\'popUp("'+command+'",'+solutions+')\\'>\\
+                Show solutions\\
             </button>'
 
       // var keys = Object.keys(dict);
       // console.log(keys)
       // for(var i=0; i<keys.length; i++){
-      //   document.getElementById(command+'-buttons').innerHTML += '<button \
+      //   document.getElementById(command+'-buttons').innerHTML += '<button \\
       //     onclick="popUp('+dict[keys[i]]+')">'+keys[i]+'</button>'
       // }
   }
@@ -258,14 +258,15 @@ $(function(){
       console.log("SPLIT:")
       var splitsolutions = dict[key].split(';')
       for(key2 in splitsolutions){
-        $('#'+arg+'-solutions-body').append('<span class="solution"\
-                onclick="onSearch(\''+splitsolutions[key2]+'\'.split(\',\'))"><u>'+splitsolutions[key2]+'</u></span>');
+        $('#'+arg+'-solutions-body').append('<span class="solution"\\
+                onclick="onSearch(\\''+splitsolutions[key2]+'\\'.split(\\',\\'))"><u>'+splitsolutions[key2]+'</u></span>');
       }
       $('#'+arg+'-solutions-body').append('<br />');
     }
   }
 
 </script>
+
 </head>
 
 <body>
@@ -1097,27 +1098,27 @@ $(function(){
           $('#'+command+'-results-pane').show();
           document.getElementById(command+'-results-space').innerHTML += '<div class="buttons-div" id="'+command+'-section"></div>';
 
-          document.getElementById(command+'-section').innerHTML += '\
-            <select \
-                class="btn-secondary" id="dropdown-'+command+'-algorithm" \
-                onchange="\
-                  document.getElementById(\'dropdown-'+command+'-run\').style.visibility = \'visible\'; \
-                  var choice = getChoice(\'dropdown-'+command+'-algorithm\'); \
-                  fillDropdown(\'Run\', Object.keys(reportData[\''+command+'\'][choice]), \'dropdown-'+command+'-run\')\
-                "\
-            >\
+          document.getElementById(command+'-section').innerHTML += '\\
+            <select \\
+                class="btn-secondary" id="dropdown-'+command+'-algorithm" \\
+                onchange="\\
+                  document.getElementById(\\'dropdown-'+command+'-run\\').style.visibility = \\'visible\\'; \\
+                  var choice = getChoice(\\'dropdown-'+command+'-algorithm\\'); \\
+                  fillDropdown(\\'Run\\', Object.keys(reportData[\\''+command+'\\'][choice]), \\'dropdown-'+command+'-run\\')\\
+                "\\
+            >\\
             </select>';
 
-          document.getElementById(command+'-section').innerHTML += '\
-            <select \
-                class="btn-secondary" id="dropdown-'+command+'-run" \
-                onchange="\
-                  var choice = getChoice(\'dropdown-'+command+'-algorithm\'); \
-                  var choice2 = getChoice(\'dropdown-'+command+'-run\'); \
-                  console.log(reportData[\''+command+'\'][choice][choice2]);\
-                  paintButtons(\''+command+'\', reportData[\''+command+'\'][choice][choice2]);\
-                "\
-            >\
+          document.getElementById(command+'-section').innerHTML += '\\
+            <select \\
+                class="btn-secondary" id="dropdown-'+command+'-run" \\
+                onchange="\\
+                  var choice = getChoice(\\'dropdown-'+command+'-algorithm\\'); \\
+                  var choice2 = getChoice(\\'dropdown-'+command+'-run\\'); \\
+                  console.log(reportData[\\''+command+'\\'][choice][choice2]);\\
+                  paintButtons(\\''+command+'\\', reportData[\\''+command+'\\'][choice][choice2]);\\
+                "\\
+            >\\
             </select><div id="'+command+'-buttons"></div>';
 
           document.getElementById('dropdown-'+command+'-run').style.visibility = 'hidden';
@@ -1145,6 +1146,182 @@ $(function(){
 </html>
 
 
+"""
+
+
+
+css_template = u"""
+
+#network-graph {
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      position: absolute;
+    }
+
+    .sigma-tooltip {
+      max-width: 240px;
+      max-height: 280px;
+      background-color: rgb(249, 247, 237);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      border-radius: 6px;
+    }
+
+    .sigma-tooltip-header {
+      font-variant: small-caps;
+      font-size: 120%;
+      color: #437356;
+      border-bottom: 1px solid #aac789;
+      padding: 10px;
+    }
+
+    .sigma-tooltip-body {
+      padding: 10px;
+    }
+
+    .sigma-tooltip-body th {
+      color: #999;
+      text-align: left;
+    }
+
+    .sigma-tooltip-footer {
+      padding: 10px;
+      border-top: 1px solid #aac789;
+    }
+
+    .sigma-tooltip > .arrow {
+      border-width: 10px;
+      position: absolute;
+      display: block;
+      width: 0;
+      height: 0;
+      border-color: transparent;
+      border-style: solid;
+    }
+
+    .sigma-tooltip.top {
+      margin-top: -12px;
+    }
+    .sigma-tooltip.top > .arrow {
+      left: 50%;
+      bottom: -10px;
+      margin-left: -10px;
+      border-top-color: rgb(249, 247, 237);
+      border-bottom-width: 0;
+    }
+
+    .sigma-tooltip.bottom {
+      margin-top: 12px;
+    }
+    .sigma-tooltip.bottom > .arrow {
+      left: 50%;
+      top: -10px;
+      margin-left: -10px;
+      border-bottom-color: rgb(249, 247, 237);
+      border-top-width: 0;
+    }
+
+    .sigma-tooltip.left {
+      margin-left: -12px;
+    }
+    .sigma-tooltip.left > .arrow {
+      top: 50%;
+      right: -10px;
+      margin-top: -10px;
+      border-left-color: rgb(249, 247, 237);
+      border-right-width: 0;
+    }
+
+    .sigma-tooltip.right {
+      margin-left: 12px;
+    }
+    .sigma-tooltip.right > .arrow {
+      top: 50%;
+      left: -10px;
+      margin-top: -10px;
+      border-right-color: rgb(249, 247, 237);
+      border-left-width: 0;
+    }
+h1 {
+      margin-bottom: 5px;
+      margin-top: 5px;
+}
+h2, .h2 {
+    font-size: 23px;
+}
+h3, .h3 {
+    font-size: 20px;
+}
+
+hr {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-color: #d3c6b1;
+}
+
+.panel{
+  border: 1px solid transparent;
+}
+
+.panel-default>.panel-heading{
+  background-color: #ceead9;
+    border-color: #647d6c;
+}
+
+.lobipanel.panel-unpin {
+  -webkit-box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3);
+  box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3);
+}
+
+
+button {
+  -webkit-appearance: button-bevel;
+}
+
+
+.btn-secondary {
+    color: #fff;
+    background-color: #2d618e;
+    border-color: #2d618e;
+  }
+
+.btn-secondary:hover, .btn-secondary:active, .btn-secondary.active, .open > .dropdown-toggle.btn-secondary {
+    color: #fff;
+    background-color: #1c4363;
+    border-color: #1c4363;
+}
+
+.btn-secondary:focus, .btn-secondary.focus > .dropdown-toggle.btn-secondary {
+  color: #fff;
+  background-color: #2d618e;
+  border-color: #2d618e;
+
+}
+
+
+select option {
+    background: #FFFFFF;
+    color: #000000;
+
+}
+
+#draggablePanelList .panel-heading {
+       cursor: move;
+   }
+#draggablePanelList2 .panel-heading {
+       cursor: move;
+   }
+
+  .lobipanel-minimized-toolbar{
+    background: none;
+    height: 45px;
+  }
+
+.solution{
+    color: #4a8fea;
+    margin-left: 10px;
+}
 
 
 """
