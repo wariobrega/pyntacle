@@ -25,6 +25,12 @@ __license__ = u"""
   """
 
 html_template = u"""
+
+
+
+
+
+
 <!doctype html>
 
 <html lang="en">
@@ -81,8 +87,14 @@ html_template = u"""
 <script src="http://pyntacle.css-mendel.it/js/sigma/sigma.misc.drawHovers.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/sigma.plugins.tooltips.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/mustache.min.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.layout.forceAtlas2/worker.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.layouts.forceLink/supervisor.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.layouts.forceLink/worker.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.layouts.fruchtermanReingold/sigma.layout.fruchtermanReingold.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.layouts.dagre/sigma.layout.dagre.js"></script>
+
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.relativeSize/sigma.plugins.relativeSize.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.parsers.json/sigma.parsers.json.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.parsers.gexf/sigma.parsers.gexf.js"></script>
@@ -92,7 +104,11 @@ html_template = u"""
 <script src="http://pyntacle.css-mendel.it/js/viewer/jquery-ui.min.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/viewer/bootstrap.min.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/viewer/draggablePanel/lobipanel.min.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/viewer/jscolor.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/viewer/palette.js"></script>
+
 <script>
+
 $(function(){
 
   $('.resultspanel').lobiPanel({
@@ -106,7 +122,6 @@ $(function(){
     maxWidth: 430,
     maxHeight: 480,
     resize: "both"
-
   });
 
   $('.controlspanel').lobiPanel({
@@ -114,28 +129,27 @@ $(function(){
     close: false,
     editTitle: false,
     expand: false,
-    // unpin: false,
-    minWidth: 230,
+    unpin: false,
+    minWidth: 260,
     minHeight: 315,
-    maxWidth: 230,
+    maxWidth: 260,
     maxHeight: 315,
     resize: "both"
-
   });
 
-  $('.solutionspanel').lobiPanel({
+  $('.layoutspanel').lobiPanel({
     reload: false,
+    close: false,
     editTitle: false,
     expand: false,
-    // unpin: false,
-    minWidth: 330,
-    minHeight: 315,
-    maxWidth: 330,
-    maxHeight: 315,
-    resize: "both",
-
-
+    unpin: false,
+    minWidth: 250,
+    minHeight: 195,
+    maxWidth: 250,
+    maxHeight: 195,
+    resize: "both"
   });
+
   var positions = [10, 130, 250];
   if ($('#Key-player-results-pane').is(':visible')){
       var instancekp = $('#Key-player-results-pane').data('lobiPanel');
@@ -162,10 +176,9 @@ $(function(){
   instancecontrols.unpin();
   instancecontrols.setPosition('right', 10)
 
-  var instancesolutionskp = $('#Key-player-solutions-pane').data('lobiPanel');
-  instancesolutionskp.unpin();
-  instancesolutionskp.setPosition(instancekp.getPosition().x+430, instancekp.getPosition().y);
-  instancesolutionskp.enableResize();
+  var instancelayouts = $('#layouts-pane').data('lobiPanel');
+  instancelayouts.unpin();
+  instancelayouts.setPosition('right', 335)
 
   var instancesolutionscom = $('#Communities-solutions-pane').data('lobiPanel');
   instancesolutionscom.unpin();
@@ -218,6 +231,7 @@ $(function(){
       //   ;
       // })
   };
+
 </script>
 
 
@@ -245,11 +259,41 @@ $(function(){
   function popUp(arg,dict){
     console.log(arg)
     console.log(dict)
+    if (document.getElementById(arg+'-solutions-pane')){
+      document.getElementById(arg+'-solutions-pane').parentNode.removeChild(document.getElementById(arg+'-solutions-pane'));
+    };
+    document.getElementById(arg+"-solcol").innerHTML = '<div id="'+arg+'-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">\\
+        <div class="panel-heading">\\
+            <div class="panel-title">\\
+                <h2 class="underline">'+arg.toLowerCase()+' solutions</h2>\\
+            </div>\\
+        </div>\\
+        <div id="'+arg+'-solutions-body" class="panel-body">\\
+        </div>\\
+     </div>'
+
+   $('.solutionspanel').lobiPanel({
+     reload: false,
+     editTitle: false,
+     expand: false,
+     // unpin: false,
+     minWidth: 330,
+     minHeight: 315,
+     maxWidth: 330,
+     maxHeight: 315,
+     resize: "both",
+   });
     var instanceresults = $('#'+arg+'-results-pane').data('lobiPanel');
     var instancesolutions = $('#'+arg+'-solutions-pane').data('lobiPanel');
     instancesolutions.unpin();
-    instancesolutions.setPosition(instanceresults.getPosition().x+440, instanceresults.getPosition().y);
+    instancesolutions.setPosition(instanceresults.getPosition().x+430, instanceresults.getPosition().y);
     instancesolutions.enableResize();
+
+    // var instanceresults = $('#'+arg+'-results-pane').data('lobiPanel');
+    // var instancesolutions = $('#'+arg+'-solutions-pane').data('lobiPanel');
+    // instancesolutions.unpin();
+    // instancesolutions.setPosition(instanceresults.getPosition().x+440, instanceresults.getPosition().y);
+    // instancesolutions.enableResize();
     $('#'+arg+'-solutions-pane').show();
     $('#'+arg+'-solutions-body').empty()
     for(key in dict){
@@ -305,6 +349,16 @@ $(function(){
           }
           input[type="range"] {
             display: inline-block;
+          }
+
+          #layouts-pane {
+            /* top: 335px !important; */
+            /*bottom: 10px;*/
+            right: 10px;
+            position: absolute;
+            width: 230px;
+            /* background-color: rgb(249, 247, 237); */
+            box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3);
           }
 
           #results-pane{
@@ -480,35 +534,86 @@ $(function(){
         <div id="network-graph"></div>
 
         <div id="control-pane" class="panel panel-default controlspanel">
-          <div class="panel-heading">
-              <div class="panel-title">
-                <h2 class="underline">filters</h2>
-              </div>
-          </div>
-
-
-          <div class="panel-body">
-              <div>
-                <h3>min degree <span id="min-degree-val">0</span></h3>
-                  0 <input id="min-degree" type="range" min="0" max="0" value="0"> <span id="max-degree-value">0</span><br>
+              <div class="panel-heading">
+                  <div class="panel-title">
+                    <h2 class="underline">filters</h2>
+                  </div>
               </div>
 
-              <div>
-                <h3>node search</h3>
-                <input type="text" id="labelInput" size="15">
-                <button id="searchSubmit">Search</button>
-                <span id=errorspace style="font-size: 12px; margin-top: 5px; color: red; display: block;"></span>
-              </div>
-              <span class="line"></span>
-              <div>
-                <button id="reset-btn">Reset filters</button>
-                <button id="export-btn">Export</button>
-              </div>
-              <div id="dump" class="hidden"></div>
-            </div>
-          </div>
 
-          <div class="row">
+              <div class="panel-body">
+                  <div>
+                    <h3>numerical attributes</h3>
+                    <select id="node-numattributes">
+                      <option value="" selected>Choose...</option>
+                    </select>
+                  </div>
+                  <div id ="slider-container">
+
+                      <div id="slider-label" style="display: inline-flex;">
+                        <h3 id="attr-slider-label" style="margin-top: 8px;"></h3>&nbsp<span class='h3'
+                                                                    id="min-attr-val" style="margin-top: 8px;">0</span>
+                      </div>
+                      <div>
+                        0 <input id="slider-attr" type="range" min="0" max="0" value="0"> <span id="max-attr-value">0</span><br>
+                        <div id="resize-box-container">
+                          <input type="checkbox" id="resize-nodes-box" onclick="ResizeByAttr()"> Resize nodes
+                        </div>
+                      </div>
+                  </div>
+
+                  <div>
+                    <h3>categorical attributes</h3>
+                    <select id="node-catattributes">
+                      <option value="" selected>Choose...</option>
+                    </select>
+                  </div>
+                  <div id ="multiselect-container">
+                      <div id="multiselect-label" style="display: -webkit-inline-box;">
+                          <h3 id="catattr-val" style="margin-top: 8px;">values for</h3>&nbsp
+                          <h3 id="attr-multiselect-label" style="margin-top: 8px;"></h3>
+                      </div>
+                      <div id="multiselect-div">
+                          <table id="multiselect-table" class="table table-striped table-responsive">
+
+                          </table>
+                      </div>
+                  </div>
+
+                  <div>
+                    <h3>node search</h3>
+                    <input type="text" id="labelInput" size="15">
+                    <button id="searchSubmit">Search</button>
+                    <span id=errorspace style="font-size: 12px; margin-top: 5px; color: red; display: block;"></span>
+                  </div>
+                  <div id="dump" class="hidden"></div>
+              </div>
+        </div>
+
+        <div id="layouts-pane" class="panel panel-default layoutspanel">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                      <h2 class="underline">layouts</h2>
+                    </div>
+                </div>
+                <div id="layouts-space" class="panel-body">
+                      <div class="radio">
+                        <label class="radio-inline"><input type="radio" name="optradio" id="radio-random" checked>Random</label>
+                      </div>
+                      <div class="radio">
+                        <label class="radio-inline"><input type="radio" name="optradio" id="radio-atlas">ForceAtlas2</label>
+                      </div>
+                      <div class="radio">
+                        <label class="radio-inline"><input type="radio" name="optradio" id="radio-frucht">FruchtermanReingold</label>
+                      </div>
+                      <div class="radio">
+                        <label class="radio-inline"><input type="radio" name="optradio" id="radio-circle">Circular</label>
+                      </div>
+
+                </div>
+        </div>
+
+        <div class="row">
               <div class="col-sm-6" style="width:450px; margin-left: 30px;">
                     <div id="Key-player-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
                         <div class="panel-heading">
@@ -520,21 +625,12 @@ $(function(){
                         </div>
                     </div>
               </div>
-              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
-                    <div id="Key-player-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">
-                      <div class="panel-heading">
-                          <div class="panel-title">
-                              <h2 class="underline">key-player solutions</h2>
-                          </div>
-                      </div>
-                      <div id="Key-player-solutions-body" class="panel-body">
-                      </div>
-                   </div>
+              <div class="col-sm-6" id="Key-player-solcol" style="width:450px; margin-left: 30px;">
               </div>
-          </div>
+        </div>
 
 
-          <div class="row">
+        <div class="row">
               <div class="col-sm-6" style="width:450px; margin-left: 30px;">
                   <div id="Communities-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
                       <div class="panel-heading">
@@ -547,22 +643,13 @@ $(function(){
                   </div>
               </div>
 
-              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
-                    <div id="Communities-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">
-                      <div class="panel-heading">
-                          <div class="panel-title">
-                              <h2 class="underline">communities solutions</h2>
-                          </div>
-                      </div>
-                      <div id="Communities-solutions-body" class="panel-body">
-                      </div>
-                   </div>
+              <div class="col-sm-6" id="Communities-solcol" style="width:450px; margin-left: 30px;">
               </div>
 
-          </div>
+        </div>
 
 
-          <div class="row">
+        <div class="row">
               <div class="col-sm-6" style="width:450px; margin-left: 30px;">
 
                   <div id="Set-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
@@ -576,16 +663,7 @@ $(function(){
                   </div>
             </div>
 
-            <div class="col-sm-6" style="width:450px; margin-left: 30px;">
-                  <div id="Set-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">
-                    <div class="panel-heading">
-                        <div class="panel-title">
-                            <h2 class="underline">set solutions</h2>
-                        </div>
-                    </div>
-                    <div id="Set-solutions-body" class="panel-body">
-                    </div>
-                 </div>
+            <div class="col-sm-6" id="Set-solcol" style="width:450px; margin-left: 30px;">
             </div>
         </div>
       <!-- <div id="results-pane" class="panel panel-default">
@@ -596,10 +674,10 @@ $(function(){
         </div>
         <div class="panel-body"></div> -->
 
-      </div>
+  </div>
 
-        <!-- The most basic usage of the Sigma JSON parser -->
-        <script>
+      <!-- The most basic usage of the Sigma JSON parser -->
+  <script>
         g = graphData;
         var config = {
           node: {
@@ -644,13 +722,118 @@ $(function(){
           // labelSizeRatio: 2,
           minNodeSize: 2,
           maxNodeSize: 9,
-          maxEdgeSize: 6,
+          maxEdgeSize: 3,
           edgeColor: 'default',
           defaultEdgeColor: '#D1D1D1',
           maxArrowSize: 5,
           minArrowSize: 3,
           sideMargin: 10
         };
+
+        sigma.classes.graph.addMethod('nodeneighbors', function(nodeId) {
+          var k,
+              neighbors = {},
+              index = this.allNeighborsIndex[nodeId] || {};
+
+          for (k in index)
+            neighbors[k] = this.nodesIndex[k];
+
+          console.log("FOUND NEIGHBORS")
+          console.log(neighbors)
+          return neighbors;
+        });
+
+        // Initialise sigma:
+        s = new sigma(
+              { // Here is the ID of the DOM element that
+                // will contain the graph:
+                graph : g,
+                renderer: {
+                  container: document.getElementById('network-graph'),
+                  type: 'canvas'
+                },
+                settings:SIGMA_SETTINGS
+              });
+
+
+        function applyAtlas() {
+          sigma.misc.animation.camera(
+            s.camera,
+            {
+              ratio: 1
+            },
+            {duration: s.settings('animationsTime') || 500}
+          );
+          s.startForceAtlas2();
+          window.setTimeout(function() {s.killForceAtlas2()}, 500);
+        }
+
+        function applyRandom() {
+
+            nodes = s.graph.nodes(),
+            len = nodes.length;
+            for (var i = 0; i < len; i++) {
+                nodes[i].x = Math.random();
+                nodes[i].y = Math.random();
+                // nodes[i].color = nodes[i].center ? '#333' : '#666';
+            }
+            sigma.misc.animation.camera(
+              s.camera,
+              {
+                x: 0,
+                y: 0,
+                ratio: 0.15
+              },
+              {duration: 200}
+            );
+            s.refresh();
+        }
+
+        function applyFrucht(){
+          sigma.misc.animation.camera(
+            s.camera,
+            {
+              ratio: 1
+            },
+            {duration: s.settings('animationsTime') || 500}
+          );
+          var frListener = sigma.layouts.fruchtermanReingold.configure(s, {
+            iterations: 500,
+            easing: 'quadraticInOut',
+            // duration: 800
+          });
+
+          // Bind the events:
+          frListener.bind('start stop interpolate', function(e) {
+            console.log(e.type);
+          });
+
+          // Start the Fruchterman-Reingold algorithm:
+          sigma.layouts.fruchtermanReingold.start(s);
+        }
+
+        function applyCircular(){
+          sigma.misc.animation.camera(
+            s.camera,
+            {
+              x: 0,
+              y: 0,
+              ratio: 0.15
+            },
+            {duration: 200}
+          );
+          s.graph.nodes().forEach(function(node, i, a) {
+          node.x = Math.cos(Math.PI * 2 * i / a.length);
+          node.y = Math.sin(Math.PI * 2 * i / a.length);
+          });
+
+          //Call refresh to render the new graph
+          s.refresh();
+        }
+
+        applyRandom();
+        // s.refresh();
+
 
         function lookupNodesByKeyValue(sigmaInstance, key, value) {
           return sigmaInstance.graph.nodes().filter(node => node[key] === value);
@@ -729,343 +912,441 @@ $(function(){
         };
 
 
-        function updatePane (graph, filter) {
-          // get max degree
-          var maxDegree = 0,
-              categories = {};
+        function updatePane (graph) {
+            // read nodes
+            var numattr = ['degree']
+            var catattr = []
+            graph.nodes().forEach(function(n) {
+              // console.log("Nodo "+n.id+" Degree: "+graph.degree(n.id))
+              console.log(n.attributes)
+              for(var a in n.attributes){
+                if(!a.startsWith("__") && a!='name'){
+                  console.log(n.attributes[a])
+                  console.log("is numeric? "+ is_numeric(n.attributes[a]))
+                  if(is_numeric(n.attributes[a])){
+                    numattr.push(a)
+                  }else{
+                    catattr.push(a)
+                  }
+                }
+              }
+            })
 
-          // read nodes
-          graph.nodes().forEach(function(n) {
-            console.log("Nodo "+n.id+" Degree: "+graph.degree(n.id))
-            maxDegree = Math.max(maxDegree, graph.degree(n.id));
-            console.log(maxDegree)
-            // categories[n.attributes.acategory] = true;
-          })
 
-          // min degree
-          _.$('min-degree').max = maxDegree;
-          _.$('max-degree-value').textContent = maxDegree;
 
-          // reset button
-          _.$('reset-btn').addEventListener("click", function(e) {
-            _.$('min-degree').value = 0;
-            _.$('min-degree-val').textContent = '0';
-            filter.undo().apply();
-            _.$('dump').textContent = '';
-            _.hide('#dump');
-          });
+            numattr = new Set(numattr)
+            console.log("NUMATTR")
+            console.log(numattr)
+            AddToAttrDropdown(numattr, 'numeric', "node-numattributes")
 
-          // export button
-          _.$('export-btn').addEventListener("click", function(e) {
-            var chain = filter.export();
-            console.log(chain);
-            _.$('dump').textContent = JSON.stringify(chain);
-            _.show('#dump');
-          });
+            catattr = new Set(catattr)
+            console.log("CATATTR")
+            console.log(catattr)
+            AddToAttrDropdown(catattr, 'categorical', "node-catattributes")
+
+            // // reset button
+            // _.$('reset-btn').addEventListener("click", function(e) {
+            //   _.$('min-degree').value = 0;
+            //   _.$('min-degree-val').textContent = '0';
+            //   filter.undo().apply();
+            //   _.$('dump').textContent = '';
+            //   _.hide('#dump');
+            // });
+
+            // // export button
+            // _.$('export-btn').addEventListener("click", function(e) {
+            //   var chain = filter.export();
+            //   console.log(chain);
+            //   _.$('dump').textContent = JSON.stringify(chain);
+            //   _.show('#dump');
+            // });
+        }
+
+        // Initialize the Filter API
+        filter = new sigma.plugins.filter(s);
+
+        updatePane(s.graph);
+        function applyMinAttrFilter(e) {
+          var v = e.target.value;
+
+          console.log(e)
+          let attr_choice = $('#node-numattributes').val()
+          console.log("V: "+v);
+          _.$('min-attr-val').textContent = v;
+          if (attr_choice == 'degree'){
+            filter
+              .undo('attrfilter')
+              .nodesBy(function(n) {
+                return s.graph.degree(n.id) >= v;
+              }, 'attrfilter')
+              .apply();
+          }else{
+            s.graph.nodes().forEach(function(n){
+              console.log(Number(n.attributes[attr_choice]))
+            })
+            filter
+              .undo('attrfilter')
+              .nodesBy(function(n) {
+                return Number(n.attributes[attr_choice]) >= v;
+              }, 'attrfilter')
+              .apply();
+          }
+        }
+
+        _.$('slider-attr').addEventListener("input", applyMinAttrFilter);  // for Chrome and FF
+        _.$('slider-attr').addEventListener("change", applyMinAttrFilter); // for IE10+, that sucks
+
+
+        function AddToAttrDropdown(keyarray, attrtype, dest){
+          let dropdown = $('#'+dest);
+          console.log(dropdown)
+          if (attrtype == 'numeric'){
+            dropdown.attr("onchange", "$('#slider-container').show();\\
+                           let attr_choice = $('#node-numattributes').val();\\
+                           console.log('Hai scelto '+attr_choice);\\
+                            _.$('slider-attr').max = CalculateRange(attr_choice);\\
+                            _.$('max-attr-value').textContent = CalculateRange(attr_choice);\\
+                             _.$('attr-slider-label').textContent = 'min '+attr_choice+' '")
+            // min degree
+            // _.$('slider-attr').max = maxDegree;
+            // _.$('max-attr-value').textContent = maxDegree;
+          }else if(attrtype == 'categorical'){
+            dropdown.attr("onchange", "let attr_choice = $('#node-catattributes').val();\\
+                           console.log('Hai scelto '+attr_choice);\\
+                           _.$('attr-multiselect-label').textContent = attr_choice;\\
+                           $('#multiselect-container').show();\\
+                           FillMultiselect(attr_choice);\\
+                           ")
+          }
+          // dropdown.attr("onchange", 'console.log("changed '+attrtype+'")')
+          for(var it = keyarray.values(), k= null; k=it.next().value; ){
+            console.log("EHILA "+k)
+            console.log(attrtype)
+            dropdown.append($('<option></option>').attr('value', k).text(k.charAt(0).toUpperCase()+k.slice(1)))
+          }
         }
 
 
+        function CalculateRange(attr){
+          values = []
+          if (attr == 'degree'){
+            var maxDegree = 0;
+            s.graph.nodes().forEach(function(n) {
+              maxDegree = Math.max(maxDegree, s.graph.degree(n.id));
+            })
+            console.log("Max for attr "+attr+" is "+maxDegree)
+            $('#resize-box-container').hide()
+            return maxDegree
+          }else{
+            s.graph.nodes().forEach(function(n) {
+              values.push(Number(n.attributes[attr]));
+            })
+            console.log("Max for attr "+attr+" is "+Math.max.apply(null, values))
+            $('#resize-box-container').show()
+            return Math.max.apply(null, values)
+          }
+        }
 
-        sigma.classes.graph.addMethod('nodeneighbors', function(nodeId) {
-        var k,
-            neighbors = {},
-            index = this.allNeighborsIndex[nodeId] || {};
+        function ResizeByAttr(){
+          var attr = $('#node-numattributes').val()
+          var status = $('#resize-nodes-box').is(':checked')
+          // second create size for every node
+          if(status==true && attr!='degree'){
+            s.graph.nodes().forEach(function(n) {
+              var attr_value = Number(n.attributes[attr]);
+              n.size = Math.sqrt(attr_value);
+            })
+          }else{
+            sigma.plugins.relativeSize(s, 1);
+          }
+          s.refresh();
+        }
 
-        for (k in index)
-          neighbors[k] = this.nodesIndex[k];
+        function FillMultiselect(attr){
+          var values = [];
+          $('#multiselect-table').html('')
+          s.graph.nodes().forEach(function(n){
+              values.push(n.attributes[attr]);
+          })
+          let unique = [...new Set(values)];
+          unique = unique.sort();
+          console.log(unique)
+          var colors = palette('mpn65', unique.length);
+          for(u = 0; u < unique.length; u++){
+            var element = $('#multiselect-table');
+            element.append('<tr>\\
+                <td class="col-xs-1"><input type="checkbox" id="'+unique[u]+'-box" onclick="console.log(\\'azione\\')"></td>\\
+                <td>'+unique[u]+'</td>\\
+                <td><button id="'+unique[u]+'-button" style="width:15px; height:15px;"></button></td>\\
+              </tr>');
+               new jscolor($('#'+unique[u]+'-button').last()[0], {valueElement:null,value:colors[u]});
 
-        console.log("FOUND NEIGHBORS")
-        console.log(neighbors)
-        return neighbors;
-      });
+          }
 
-
-      // Initialise sigma:
-      s = new sigma(
-            { // Here is the ID of the DOM element that
-              // will contain the graph:
-              graph : g,
-              renderer: {
-                container: document.getElementById('network-graph'),
-                type: 'canvas'
-              },
-              settings:SIGMA_SETTINGS
-            });
-
-                    console.log("ENTRATO")
-                    var tooltips = sigma.plugins.tooltips(s, s.renderers[0], config);
-                    sigma.plugins.relativeSize(s, 1);
-                    var popUp;
-                    var i,
-                    nodes = s.graph.nodes(),
-                    len = nodes.length;
-
-                    for (i = 0; i < len; i++) {
-                        nodes[i].x = Math.random();
-                        nodes[i].y = Math.random();
-                        // nodes[i].size = s.graph.degree(nodes[i].id);
-                        // nodes[i].color = nodes[i].center ? '#333' : '#666';
-                    }
-
-                    s.refresh();
-                    // launch force-atlas for 5sec
-                    s.startForceAtlas2();
-                    window.setTimeout(function() {s.killForceAtlas2()}, 1000);
-                  // We first need to save the original colors of our
-                  // nodes and edges, like this:
-                  s.graph.nodes().forEach(function(n) {
-                    n.originalColor = n.color;
-                  });
-                  s.graph.edges().forEach(function(e) {
-                    e.originalColor = e.color;
-                  });
-
-                  // When a node is clicked, we check for each node
-                  // if it is a neighbor of the clicked one. If not,
-                  // we set its color as grey, and else, it takes its
-                  // original color.
-                  // We do the same for the edges, and we only keep
-                  // edges that have both extremities colored.
-                  s.bind('clickNode', function(e) {
-                    console.log("NODE:")
-                    console.log(e.data.node)
-                    var nodeId = e.data.node.id,
-                        toKeep = s.graph.nodeneighbors(nodeId);
-                    toKeep[nodeId] = e.data.node;
-                    console.log("Neighbors of "+nodeId+":")
-                    s.graph.nodes().forEach(function(n) {
-                      if (toKeep[n.id]){
-                        console.log(n)
-                        n.color = "#ffa7a7";
-                      }else{
-                        n.color = '#ededed';
-                      }
-
-                      if (n.id == nodeId)
-                          n.color = "#f00"
-                    });
-
-                    s.graph.edges().forEach(function(e) {
-                      if (toKeep[e.target] && (e.source == nodeId || e.target == nodeId)){
-                        console.log("coloring edge between "+e.source+" and "+e.target)
-                        e.color = "#b00";
-                        e.size = 0.5;
-                      }else{
-                        e.color = '#ededed';
-                      }
-                    });
-
-                    // Since the data has been modified, we need to
-                    // call the refresh method to make the colors
-                    // update effective.
-                    s.refresh();
-
-                    // var prefix = s.renderers[0].options.prefix;
-                    // var node = e.data.node;
-                    // var x = e.data.node[prefix + 'x'];
-                    // var y = e.data.node[prefix + 'y'];
-
-                    // Manually open a tooltip on a node:
-                    var prefix = s.renderers[0].options.prefix;
-                    var node = e.data.node;
-                    var x = e.data.node[prefix + 'x'];
-                    var y = e.data.node[prefix + 'y'];
-                    tooltips.open(node, config.node, x, y);
+        }
 
 
-                    tooltips.bind('shown', function(event) {
-                      console.log('tooltip shown', event);
-                    });
+        var tooltips = sigma.plugins.tooltips(s, s.renderers[0], config);
+        sigma.plugins.relativeSize(s, 1);
+        var popUp;
+        var i,
+        nodes = s.graph.nodes(),
+        len = nodes.length;
 
-                    tooltips.bind('hidden', function(event) {
-                      console.log('tooltip hidden', event);
-                    });
+        for (i = 0; i < len; i++) {
+            nodes[i].x = Math.random();
+            nodes[i].y = Math.random();
+            // nodes[i].size = s.graph.degree(nodes[i].id);
+            // nodes[i].color = nodes[i].center ? '#333' : '#666';
+        }
 
-                  });
 
-                  function showNode(node) {
-                    console.log("do do do "+node.id)
+        // We first need to save the original colors of our
+        // nodes and edges, like this:
+        s.graph.nodes().forEach(function(n) {
+          n.originalColor = n.color;
+        });
+        s.graph.edges().forEach(function(e) {
+          e.originalColor = e.color;
+        });
+
+        // When a node is clicked, we check for each node
+        // if it is a neighbor of the clicked one. If not,
+        // we set its color as grey, and else, it takes its
+        // original color.
+        // We do the same for the edges, and we only keep
+        // edges that have both extremities colored.
+        s.bind('clickNode', function(e) {
+                console.log("NODE:")
+                console.log(e.data.node)
+                var nodeId = e.data.node.id,
+                    toKeep = s.graph.nodeneighbors(nodeId);
+                toKeep[nodeId] = e.data.node;
+                console.log("Neighbors of "+nodeId+":")
+                s.graph.nodes().forEach(function(n) {
+                  if (toKeep[n.id]){
+                    console.log(n)
+                    n.color = "#ffa7a7";
+                  }else{
+                    n.color = '#ededed';
                   }
 
-                  // When searching
-                  function onSearch(query) {
-                    var nodes = s.graph.nodes();
-                    console.log(nodes);
-                    console.log("QUERY :"+query);
-                    var results = [];
-                    var targetNodesId = [];
-                    query.forEach(function(elem){
-                      var r = lookupNodeByLabel(s, elem);
-                      console.log("RESULT TEMP")
-                      console.log(r)
-                      if (r != undefined){
-                        results.push(r);
-                        targetNodesId.push(r.id)
-                      }
-                    });
-                    if (results == []){
-                      document.getElementById("errorspace").innerHTML = "Node(s) not found!";
-                    }else{
-                      document.getElementById("errorspace").innerHTML = "";
-                    }
-                    console.log("FINAL RESULTS")
-                    console.log(results)
-                    var toKeep = {};
-                    var coords = {'x':0, 'y':0}
-                    results.forEach(function(result){
-                      Object.assign(toKeep, s.graph.nodeneighbors(result.id));
-                      toKeep[result.id] = result;
-                      console.log("ITERATION")
-                      console.log(result)
+                  if (n.id == nodeId)
+                      n.color = "#f00"
+                });
 
-                      console.log(result.id)
-                      console.log(toKeep)
-                      console.log("COORDS")
-                      console.log(result[s.camera.readPrefix + 'x']) //questo e' read_cam0:x
-                      console.log(result[s.camera.readPrefix + 'y'])
-                      coords['x']+=result[s.camera.readPrefix + 'x']
-                      coords['y']+=result[s.camera.readPrefix + 'y']
-
-                    })
-
-
-                    // reset all previous highlights (if present)
-                    s.graph.nodes().forEach(function(n) {
-                      n.color = n.originalColor;
-                    });
-
-                    s.graph.edges().forEach(function(e) {
-                      e.color = e.originalColor;
-                      e.size = 0;
-
-                    });
-
-                    // highlight search result and neighbors
-
-                      s.graph.nodes().forEach(function(n) {
-                        if (toKeep[n.id])
-                          n.color = "#ffa7a7";
-                        else
-                          n.color = '#ededed';
-
-                        if (targetNodesId.includes(n.id))
-                            n.color = "#f00"
-                    });
-
-                    s.graph.edges().forEach(function(e) {
-                      // console.log("EDGE SOURCE "+e.source)
-                      // console.log("EDGE target "+e.target)
-                      // console.log("RESULT "+result.id)
-                      // console.log(e.target == result.id)
-                      console.log(toKeep[e.target])
-                      if (toKeep[e.target] && (targetNodesId.includes(e.target) || targetNodesId.includes(e.source))){
-                        console.log("drawing edge between "+e.source+" and "+e.target)
-                        e.color = "#b00";
-                        e.size = 0.5;
-                      }else{
-                        e.color = '#ededed';
-                      }
-                    });
-                    console.log("AVG COORDS")
-                    console.log(coords['x']/results.length)
-                    console.log(coords['y']/results.length)
-
-                    sigma.misc.animation.camera(
-                      s.camera,
-                      {
-                        x: coords['x']/results.length,
-                        y: coords['y']/results.length,
-                        ratio: 1
-                      },
-                      {duration: s.settings('animationsTime') || 300}
-                    );
-                    s.refresh();
-
-
-
-                    // Filter or find the first matching node then apply showNode on it
+                s.graph.edges().forEach(function(e) {
+                  if (toKeep[e.target] && (e.source == nodeId || e.target == nodeId)){
+                    console.log("coloring edge between "+e.source+" and "+e.target)
+                    e.color = "#ffa7a7";
+                    e.size = 0.3;
+                  }else{
+                    e.color = '#ededed';
                   }
-
-                  // When the stage is clicked, we just color each
-                  // node and edge with its original color.
-                  s.bind('clickStage', function(e) {
-                    tooltips.close();
-
-                    s.graph.nodes().forEach(function(n) {
-                      n.color = n.originalColor;
-                    });
-
-                    s.graph.edges().forEach(function(e) {
-                      e.color = e.originalColor;
-                      e.size = 0;
-
-                    });
-
-                    // Same as in the previous event:
-                    s.refresh();
-                  });
-
-                  s.cameras[0].bind('coordinatesUpdated', function() {
-                    tooltips.close();
-
-                  });
-
-
-                var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
-
-                dragListener.bind('startdrag', function(event) {
-                  tooltips.close();
-                  console.log(event);
-                });
-                dragListener.bind('drag', function(event) {
-                  tooltips.close();
-
-                  console.log(event);
-                });
-                dragListener.bind('drop', function(event) {
-                  console.log(event);
-                });
-                dragListener.bind('dragend', function(event) {
-                  console.log(event);
                 });
 
-                // Initialize the Filter API
-                filter = new sigma.plugins.filter(s);
+                // Since the data has been modified, we need to
+                // call the refresh method to make the colors
+                // update effective.
+                s.refresh();
 
-                updatePane(s.graph, filter);
+                // var prefix = s.renderers[0].options.prefix;
+                // var node = e.data.node;
+                // var x = e.data.node[prefix + 'x'];
+                // var y = e.data.node[prefix + 'y'];
 
-                function applyMinDegreeFilter(e) {
-                  var v = e.target.value;
-                  console.log("V: "+v);
-                  _.$('min-degree-val').textContent = v;
+                // Manually open a tooltip on a node:
+                var prefix = s.renderers[0].options.prefix;
+                var node = e.data.node;
+                var x = e.data.node[prefix + 'x'];
+                var y = e.data.node[prefix + 'y'];
+                tooltips.open(node, config.node, x, y);
 
-                  filter
-                    .undo('min-degree')
-                    .nodesBy(function(n) {
-                      return s.graph.degree(n.id) >= v;
-                    }, 'min-degree')
-                    .apply();
+
+                tooltips.bind('shown', function(event) {
+                  console.log('tooltip shown', event);
+                });
+
+                tooltips.bind('hidden', function(event) {
+                  console.log('tooltip hidden', event);
+                });
+
+        });
+
+        function showNode(node) {
+                console.log("do do do "+node.id)
+        }
+
+        // When searching
+        function onSearch(query) {
+                var nodes = s.graph.nodes();
+                console.log(nodes);
+                console.log("QUERY :"+query);
+                var results = [];
+                var targetNodesId = [];
+
+                query.forEach(function(elem){
+                  var r = lookupNodeByLabel(s, elem);
+                  console.log("RESULT TEMP")
+                  console.log(r)
+                  if (r != undefined){
+                    results.push(r);
+                    targetNodesId.push(r.id)
+                  }
+                });
+                if (results == []){
+                  document.getElementById("errorspace").innerHTML = "Node(s) not found!";
+                }else{
+                  document.getElementById("errorspace").innerHTML = "";
                 }
+                console.log("FINAL RESULTS")
+                console.log(results)
+                var toKeep = {};
+                var coords = {'x':0, 'y':0}
+                results.forEach(function(result){
+                  Object.assign(toKeep, s.graph.nodeneighbors(result.id));
+                  toKeep[result.id] = result;
+                  console.log("ITERATION")
+                  console.log(result)
 
-                function SearchByLabel(e) {
-                  var v = document.getElementById('labelInput').value.split(',')
-                  console.log("MYQUERY")
-                  console.log(v)
-                  onSearch(v)
-                  // var c = e.target[e.target.selectedIndex].value;
-                  // filter
-                  //   .undo('node-category')
-                  //   .nodesBy(function(n) {
-                  //     return !c.length || n.attributes.acategory === c;
-                  //   }, 'node-category')
-                  //   .apply();
-                }
-
-                _.$('min-degree').addEventListener("input", applyMinDegreeFilter);  // for Chrome and FF
-                _.$('min-degree').addEventListener("change", applyMinDegreeFilter); // for IE10+, that sucks
-                _.$('searchSubmit').addEventListener("click", SearchByLabel);  // for Chrome and FF
+                  console.log(result.id)
+                  console.log(toKeep)
+                  console.log("COORDS")
+                  console.log(result[s.camera.readPrefix + 'x']) //questo e' read_cam0:x
+                  console.log(result[s.camera.readPrefix + 'y'])
+                  coords['x']+=result[s.camera.readPrefix + 'x']
+                  coords['y']+=result[s.camera.readPrefix + 'y']
+                })
 
 
+                // reset all previous highlights (if present)
+                s.graph.nodes().forEach(function(n) {
+                  n.color = n.originalColor;
+                });
+
+                s.graph.edges().forEach(function(e) {
+                  e.color = e.originalColor;
+                  e.size = 0;
+
+                });
+
+                // highlight search result and neighbors
+
+                s.graph.nodes().forEach(function(n) {
+                    if (toKeep[n.id])
+                      n.color = "#ffa7a7";
+                    else
+                      n.color = '#ededed';
+
+                    if (targetNodesId.includes(n.id))
+                        n.color = "#f00"
+                });
+
+                s.graph.edges().forEach(function(e) {
+                  // console.log("EDGE SOURCE "+e.source)
+                  // console.log("EDGE target "+e.target)
+                  // console.log("RESULT "+result.id)
+                  // console.log(e.target == result.id)
+                  console.log(toKeep[e.target])
+                  if (toKeep[e.target] && (targetNodesId.includes(e.target) || targetNodesId.includes(e.source))){
+                    console.log("drawing edge between "+e.source+" and "+e.target)
+                    e.color = "#ffa7a7";
+                    e.size = 0.3;
+                  }else{
+                    e.color = '#ededed';
+                  }
+                });
+
+                console.log("AVG COORDS")
+                console.log(coords['x']/results.length)
+                console.log(coords['y']/results.length)
+
+                sigma.misc.animation.camera(
+                  s.camera,
+                  {
+                    x: coords['x']/results.length,
+                    y: coords['y']/results.length,
+
+                  },
+                  {duration: s.settings('animationsTime') || 300}
+                );
+                s.refresh();
+        }
+
+        // When the stage is clicked, we just color each
+        // node and edge with its original color.
+        s.bind('clickStage', function(e) {
+          tooltips.close();
+
+          s.graph.nodes().forEach(function(n) {
+            n.color = n.originalColor;
+          });
+
+          s.graph.edges().forEach(function(e) {
+            e.color = e.originalColor;
+            e.size = 0;
+
+          });
+
+          // Same as in the previous event:
+          s.refresh();
+        });
+
+        s.cameras[0].bind('coordinatesUpdated', function() {
+          tooltips.close();
+        });
+
+
+        var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+
+        dragListener.bind('startdrag', function(event) {
+          tooltips.close();
+          console.log(event);
+        });
+        dragListener.bind('drag', function(event) {
+          tooltips.close();
+
+          console.log(event);
+        });
+        dragListener.bind('drop', function(event) {
+          console.log(event);
+        });
+        dragListener.bind('dragend', function(event) {
+          console.log(event);
+        });
+
+
+        function SearchByLabel(e) {
+          var v = document.getElementById('labelInput').value.split(',')
+          console.log("MYQUERY")
+          console.log(v)
+          onSearch(v)
+          // var c = e.target[e.target.selectedIndex].value;
+          // filter
+          //   .undo('node-category')
+          //   .nodesBy(function(n) {
+          //     return !c.length || n.attributes.acategory === c;
+          //   }, 'node-category')
+          //   .apply();
+        }
+
+        _.$('searchSubmit').addEventListener("click", SearchByLabel);  // for Chrome and FF
+
+
+        var ex1 = document.getElementById('radio-random');
+        var ex2 = document.getElementById('radio-atlas');
+        var ex3 = document.getElementById('radio-frucht');
+        var ex4 = document.getElementById('radio-circle');
+
+
+        ex1.onclick = applyRandom;
+        ex2.onclick = applyAtlas;
+        ex3.onclick = applyFrucht;
+        ex4.onclick = applyCircular;
+
+
+        $('#slider-container').hide();
+        $('#multiselect-container').hide();
         if (document.getElementById('Key-player-results-pane') !== null){
           $('#Key-player-results-pane').hide();
           $('#Key-player-solutions-pane').hide();
@@ -1136,10 +1417,13 @@ $(function(){
           var a = document.getElementById(dropd);
           return a.options[a.selectedIndex].value
         }
-        </script>
 
+        function is_numeric(str){
+            return !isNaN(str);
+        }
 
-    </div>
+        s.refresh()
+  </script>
 
 </body>
 
@@ -1151,6 +1435,7 @@ $(function(){
 
 
 css_template = u"""
+
 
 #network-graph {
       top: 0;
@@ -1321,6 +1606,17 @@ select option {
 .solution{
     color: #4a8fea;
     margin-left: 10px;
+}
+
+input[type=checkbox] {
+  margin: 0;
+  vertical-align: middle;
+  position: relative;
+  bottom: 1px;
+}
+
+#multiselect-table>tbody>tr>td {
+    padding: 4px;
 }
 
 

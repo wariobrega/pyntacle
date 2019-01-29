@@ -229,7 +229,6 @@ class pyntacleReporter():
 
                     # print(';'.join(list(','.join(sol) for sol in report_dict[k][0])))
                     # print(sol.join(',') for sol in report_dict[k][0])
-            input()
 
         if self.report_type == ReportEnum.Communities:
             json_data.setdefault("Communities", {})
