@@ -108,6 +108,20 @@ html_template = u"""
 <script src="http://pyntacle.css-mendel.it/js/viewer/palette.js"></script>
 
 <script>
+  function hexc(colorval) {
+    var parts = colorval.match(/^rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)$/);
+    delete(parts[0]);
+    for (var i = 1; i <= 3; ++i) {
+        parts[i] = parseInt(parts[i]).toString(16);
+        if (parts[i].length == 1) parts[i] = '0' + parts[i];
+    }
+    color = parts.join('');
+
+    return color;
+  }
+
+</script>
+<script>
 
 $(function(){
 
@@ -277,9 +291,9 @@ $(function(){
      editTitle: false,
      expand: false,
      // unpin: false,
-     minWidth: 330,
+     minWidth: 350,
      minHeight: 315,
-     maxWidth: 330,
+     maxWidth: 350,
      maxHeight: 315,
      resize: "both",
    });
@@ -296,16 +310,20 @@ $(function(){
     // instancesolutions.enableResize();
     $('#'+arg+'-solutions-pane').show();
     $('#'+arg+'-solutions-body').empty()
+    $('#'+arg+'-solutions-body').html("<table id='"+arg+"-table' class='table-striped solutionstable'></table>")
     for(key in dict){
-      $('#'+arg+'-solutions-body').append('<span class="metric">'+key+':</span>');
-      console.log(dict[key])
-      console.log("SPLIT:")
+      $('#'+arg+'-table').append('<tr id="'+key+'-row">')
+      $('#'+key+'-row').append('<td class="metric keycell">'+key+':</td>');
+      console.log(dict[key]);
+      console.log("SPLIT:");
       var splitsolutions = dict[key].split(';')
+      $('#'+key+'-row').append('<td id="'+key+'-solutionscell" class="solutionscell">');
       for(key2 in splitsolutions){
-        $('#'+arg+'-solutions-body').append('<span class="solution"\\
-                onclick="onSearch(\\''+splitsolutions[key2]+'\\'.split(\\',\\'))"><u>'+splitsolutions[key2]+'</u></span>');
+        $('#'+key+'-solutionscell').append('<button class="btn btn-success btn-outline btn-xs solbutton"\\
+                onclick="onSearch(\\''+splitsolutions[key2]+'\\'.split(\\',\\'))">'+splitsolutions[key2]+'</button>');
       }
-      $('#'+arg+'-solutions-body').append('<br />');
+      $('#'+key+'-row').append('</td>');
+      $('#'+arg+'-table').append('</tr>');
     }
   }
 
@@ -543,7 +561,7 @@ $(function(){
 
               <div class="panel-body">
                   <div>
-                    <h3>numerical attributes</h3>
+                    <h3 style="margin-top: 0px;">numerical attributes</h3>
                     <select id="node-numattributes">
                       <option value="" selected>Choose...</option>
                     </select>
@@ -569,10 +587,10 @@ $(function(){
                     </select>
                   </div>
                   <div id ="multiselect-container">
-                      <div id="multiselect-label" style="display: -webkit-inline-box;">
+                      <!-- <div id="multiselect-label" style="display: -webkit-inline-box;">
                           <h3 id="catattr-val" style="margin-top: 8px;">values for</h3>&nbsp
                           <h3 id="attr-multiselect-label" style="margin-top: 8px;"></h3>
-                      </div>
+                      </div> -->
                       <div id="multiselect-div">
                           <table id="multiselect-table" class="table table-striped table-responsive">
 
@@ -725,6 +743,7 @@ $(function(){
           maxEdgeSize: 3,
           edgeColor: 'default',
           defaultEdgeColor: '#D1D1D1',
+          defaultNodeColor:	'#1b9e77',
           maxArrowSize: 5,
           minArrowSize: 3,
           sideMargin: 10
@@ -1013,7 +1032,6 @@ $(function(){
           }else if(attrtype == 'categorical'){
             dropdown.attr("onchange", "let attr_choice = $('#node-catattributes').val();\\
                            console.log('Hai scelto '+attr_choice);\\
-                           _.$('attr-multiselect-label').textContent = attr_choice;\\
                            $('#multiselect-container').show();\\
                            FillMultiselect(attr_choice);\\
                            ")
@@ -1075,14 +1093,35 @@ $(function(){
           for(u = 0; u < unique.length; u++){
             var element = $('#multiselect-table');
             element.append('<tr>\\
-                <td class="col-xs-1"><input type="checkbox" id="'+unique[u]+'-box" onclick="console.log(\\'azione\\')"></td>\\
+                <td class="col-xs-1"><input type="checkbox" id="'+unique[u]+'-box" onclick="update(this.checked, hexc(document.getElementById(\\''+unique[u]+'-button\\').style[\\'background-color\\']) , \\''+attr+'\\', \\''+unique[u]+'\\')"></td>\\
                 <td>'+unique[u]+'</td>\\
                 <td><button id="'+unique[u]+'-button" style="width:15px; height:15px;"></button></td>\\
               </tr>');
-               new jscolor($('#'+unique[u]+'-button').last()[0], {valueElement:null,value:colors[u]});
-
+               new jscolor($('#'+unique[u]+'-button').last()[0], {valueElement:'valueElement',value:colors[u], onFineChange:'update($(\\'#'+unique[u]+'-box\\').is(\\':checked\\'), this, "'+attr+'" ,"'+unique[u]+'")'});
           }
 
+
+        }
+
+        function update(checked, jscolor, attr, val) {
+            console.log("Dsiplayed color is " + jscolor)
+// 'jscolor' instance can be used as a string
+        // document.getElementById('rect').style.backgroundColor = '#' + jscolor
+            console.log(checked + "CHOSE "+jscolor + " for " + attr + " "+ val)
+            s.graph.nodes().forEach(function(n){
+                if(n.attributes[attr] == val){
+                  if(checked == true){
+                    console.log("changing node ")
+                    console.log(n)
+                    n.color = "#"+jscolor
+                    n.originalColor = "#"+jscolor
+                  }else{
+                    n.color = "#1b9e77"
+                    n.originalColor = "#1b9e77"
+                  }
+                }
+            })
+            s.refresh();
         }
 
 
@@ -1429,12 +1468,12 @@ $(function(){
 
 </html>
 
-
 """
 
 
 
 css_template = u"""
+
 
 
 #network-graph {
@@ -1608,6 +1647,31 @@ select option {
     margin-left: 10px;
 }
 
+.solutionstable {
+    table-layout: fixed; 
+    width: -webkit-fill-available;
+}
+.keycell{
+    width:23%; 
+    padding: 5px;
+    vertical-align: top;
+    font-weight: bold;
+}
+.solutionscell{
+    width:-webkit-fill-available;
+    padding: 8px 0 3px 0;
+    word-wrap: break-word; 
+    float: left;
+}
+.solbutton{
+    background-color:#ffffff;
+    color:#000000;
+    -webkit-appearance: unset !important;
+    padding: 0px 3px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
 input[type=checkbox] {
   margin: 0;
   vertical-align: middle;
@@ -1617,7 +1681,16 @@ input[type=checkbox] {
 
 #multiselect-table>tbody>tr>td {
     padding: 4px;
+    border-top: 0px solid #ddd;
 }
+
+#multiselect-div{
+    padding: 5px;
+    margin-top: 15px;
+    border: 1px solid #ceead9;
+}
+
+
 
 
 """
