@@ -427,18 +427,17 @@ class Set:
             setF_attr_dict['\nCommon Nodes'] = 'Node names'
             setF_attr_dict[len(intersection_set)] = ','.join(intersection_set)
 
-        print("ATTR DICTS")
-        print(set1_attr_dict)
-        print(set2_attr_dict)
-        print(setF_attr_dict)
-        input()
-        print("CREATE REPORT FOR 1")
+        # print("ATTR DICTS")
+        # print(set1_attr_dict)
+        # print(set2_attr_dict)
+        # print(setF_attr_dict)
+        # print("CREATE REPORT FOR 1")
         reporter1.create_report(ReportEnum.Set, set1_attr_dict)
-        print("CREATE REPORT FOR 2")
+        # print("CREATE REPORT FOR 2")
         reporter2.create_report(ReportEnum.Set, set2_attr_dict)
-        print("CREATE REPORT FOR FINAL")
+        # print("CREATE REPORT FOR FINAL")
         reporter_final.create_report(ReportEnum.Set, setF_attr_dict)
-        print("CREATE REPORT FOR BOTH")
+        # print("CREATE REPORT FOR BOTH")
         reporter_both_graphs.create_report(ReportEnum.Set, OrderedDict())
         reporter1.report[1] = ['\n--- Graph 1 ---']
         reporter2.report[1] = ['--- Graph 2 ---']
@@ -455,11 +454,11 @@ class Set:
         reporter1.report.extend(reporter2.report)
         reporter1.report.extend(reporter_final.report)
         reporter1.write_report(report_dir=self.args.directory, format=self.args.report_format)
-        print("THIS IS REPORT DICt")
-        print(report_dict)
-        print("THIS IS BOTH GRAPHS")
-        print(both_graphs.summary())
-        input()
+        # print("THIS IS REPORT DICt")
+        # print(report_dict)
+        # print("THIS IS BOTH GRAPHS")
+        # print(both_graphs.summary())
+        # input()
 
         reporter_both_graphs.write_json_report(report_dir=self.args.directory, report_dict=report_dict, suffix=graph1["name"][0]+"_"+graph2["name"][0])
 

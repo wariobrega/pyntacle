@@ -28,9 +28,6 @@ html_template = u"""
 
 
 
-
-
-
 <!doctype html>
 
 <html lang="en">
@@ -120,6 +117,22 @@ html_template = u"""
     return color;
   }
 
+  Array.prototype.remove = function() {
+      var what, a = arguments, L = a.length, ax;
+      while (L && this.length) {
+          what = a[--L];
+          while ((ax = this.indexOf(what)) !== -1) {
+              this.splice(ax, 1);
+          }
+      }
+      return this;
+  };
+
+  Object.defineProperty(Array.prototype, 'remove', {
+    writeable: true,
+    enumerable: false,
+    value: Array.prototype.remove
+  })
 </script>
 <script>
 
@@ -147,8 +160,7 @@ $(function(){
     minWidth: 260,
     minHeight: 315,
     maxWidth: 260,
-    maxHeight: 315,
-    resize: "both"
+    maxHeight: 395,
   });
 
   $('.layoutspanel').lobiPanel({
@@ -157,14 +169,14 @@ $(function(){
     editTitle: false,
     expand: false,
     unpin: false,
-    minWidth: 250,
+    minWidth: 260,
     minHeight: 195,
-    maxWidth: 250,
+    maxWidth: 260,
     maxHeight: 195,
     resize: "both"
   });
 
-  var positions = [10, 130, 250];
+  var positions = [200, 320, 440];
   if ($('#Key-player-results-pane').is(':visible')){
       var instancekp = $('#Key-player-results-pane').data('lobiPanel');
       instancekp.unpin();
@@ -188,11 +200,11 @@ $(function(){
 
   var instancecontrols = $('#control-pane').data('lobiPanel');
   instancecontrols.unpin();
-  instancecontrols.setPosition('right', 10)
+  instancecontrols.setPosition('right', 280)
 
   var instancelayouts = $('#layouts-pane').data('lobiPanel');
   instancelayouts.unpin();
-  instancelayouts.setPosition('right', 335)
+  instancelayouts.setPosition('right', 640)
 
   var instancesolutionscom = $('#Communities-solutions-pane').data('lobiPanel');
   instancesolutionscom.unpin();
@@ -227,18 +239,32 @@ $(function(){
 
 
 <script>
+
+  var nicenames_algorithms = {"KP_greedy":"Greedy", "KP_bruteforce":"Brute-force"}
   function fillDropdown(defaultkey, subkeys, dest){
       console.log("IN FUNCTION!")
+      console.log(defaultkey)
+      console.log(dest)
       console.log(subkeys);
       let dropdown = $('#'+dest);
       $(dropdown).empty();
-      console.log(dest)
       dropdown.append('<option  selected disabled hidden>'+defaultkey+'</option>');
       dropdown.prop('selectedIndex', 0);
       for(var i=0; i<subkeys.length; i++){
         console.log("ENTRY?")
         console.log(subkeys[i])
-        dropdown.append($('<option></option>').attr('value', subkeys[i]).text(subkeys[i]))
+        if(subkeys[i] in nicenames_algorithms){
+          label = nicenames_algorithms[subkeys[i]]
+        }else{
+          label = subkeys[i]
+        }
+
+        if(defaultkey=="Run"){
+          console.log("this is subkeys[i] " + subkeys[i])
+          date = subkeys[i].split('-')
+          label = date.slice(0,3).join('-')+"-"+date[date.length-1].match(/.{2}/g).join(':');
+        }
+        dropdown.append($('<option></option>').attr('value', subkeys[i]).text(label))
       }
       // $.each(subkeys, function (entry) {
       //
@@ -255,6 +281,7 @@ $(function(){
       console.log(command)
       var solutions = JSON.stringify(dict).replace(/\\\\"/g, '"')
       $("#"+command+"-buttons").html("");
+      document.getElementById(command+'-buttons').style.visibility = 'visible';
       document.getElementById(command+'-buttons').innerHTML += '<button \\
             class="btn-success" type="button" onclick=\\'popUp("'+command+'",'+solutions+')\\'>\\
                 Show solutions\\
@@ -270,6 +297,7 @@ $(function(){
 </script>
 
 <script>
+  var nicenames = {'mreach':"m-reach"}
   function popUp(arg,dict){
     console.log(arg)
     console.log(dict)
@@ -313,12 +341,20 @@ $(function(){
     $('#'+arg+'-solutions-body').html("<table id='"+arg+"-table' class='table-striped solutionstable'></table>")
     for(key in dict){
       $('#'+arg+'-table').append('<tr id="'+key+'-row">')
-      $('#'+key+'-row').append('<td class="metric keycell">'+key+':</td>');
+      if(key in nicenames){
+        label = nicenames[key]
+      }else{
+        label = key
+      }
+      $('#'+key+'-row').append('<td class="metric keycell">'+label+':</td>');
       console.log(dict[key]);
       console.log("SPLIT:");
       var splitsolutions = dict[key].split(';')
+      console.log(splitsolutions)
       $('#'+key+'-row').append('<td id="'+key+'-solutionscell" class="solutionscell">');
       for(key2 in splitsolutions){
+        console.log("KEY2")
+        console.log(splitsolutions[key2])
         $('#'+key+'-solutionscell').append('<button class="btn btn-success btn-outline btn-xs solbutton"\\
                 onclick="onSearch(\\''+splitsolutions[key2]+'\\'.split(\\',\\'))">'+splitsolutions[key2]+'</button>');
       }
@@ -332,6 +368,9 @@ $(function(){
 </head>
 
 <body>
+  <div style="display:-webkit-box; margin-bottom:30px; margin-top:20px; text-align:-webkit-center;">
+        	<img class="img-fluid" style="padding-left: 5px; padding-right:5px" src="http://pyntacle.css-mendel.it/images/pyntacle_ink.png" alt="inn_logo">
+  </div>
   <div id="container">
 
         <!-- Import Sigma JS -->
@@ -340,11 +379,11 @@ $(function(){
         <!-- Add some CSS so we can see the graph! -->
         <style>
           #network-graph {
-            top: 0;
+            position: absolute;
+            top: 180px;
             bottom: 0;
             left: 0;
             right: 0;
-            position: absolute;
           }
           body {
             color: #333;
@@ -464,8 +503,8 @@ $(function(){
           }
 
           .sigma-tooltip {
-            max-width: 240px;
-            max-height: 280px;
+            max-width: 440px;
+            max-height: 680px;
             background-color: rgba(249, 247, 237, 0.95);
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             border-radius: 6px;
@@ -546,6 +585,11 @@ $(function(){
             border-right-color: rgb(249, 247, 237);
             border-left-width: 0;
           }
+
+	  .sigma-tooltip > .sigma-tooltip-body > table > tbody > tr > td {
+	    padding-left: 10px;
+	    word-break: break-word;
+	  }
         </style>
 
         <!-- A placeholder for the graph -->
@@ -559,31 +603,39 @@ $(function(){
               </div>
 
 
-              <div class="panel-body">
+              <div class="panel-body" style="height:auto !important">
                   <div>
-                    <h3 style="margin-top: 0px;">numerical attributes</h3>
+                    <h3 style="margin-top: 0px; font-weight:bold">numerical attributes</h3>
                     <select id="node-numattributes">
-                      <option value="" selected>Choose...</option>
+                      <option value="" selected disabled>Choose...</option>
                     </select>
                   </div>
                   <div id ="slider-container">
 
-                      <div id="slider-label" style="display: inline-flex;">
-                        <h3 id="attr-slider-label" style="margin-top: 8px;"></h3>&nbsp<span class='h3'
-                                                                    id="min-attr-val" style="margin-top: 8px;">0</span>
+                      <div id="slider-label" style="display: inline-flex; margin-top: 15px;">
+                        <h4 id="attr-slider-label" style="margin-top: 0px; margin-bottom: 0px;"></h4>&nbsp
+                        <span class='h4' id="min-attr-val" style="margin-top: 0px; font-weight:bold; margin-bottom: 0px">0</span>
                       </div>
                       <div>
-                        0 <input id="slider-attr" type="range" min="0" max="0" value="0"> <span id="max-attr-value">0</span><br>
+                        <span style="vertical-align: super; ">0</span>
+                        <input id="slider-attr" type="range" min="0" max="0" value="0">
+                        <span id="max-attr-value" style="vertical-align: super;">0</span><br>
+                        <div style="margin-bottom: 10px;">
+                          <span id="survivors" class="h4" style="margin-top: 3px; font-size:16px"></span>
+                        </div>
                         <div id="resize-box-container">
                           <input type="checkbox" id="resize-nodes-box" onclick="ResizeByAttr()"> Resize nodes
                         </div>
                       </div>
                   </div>
+                  <div>
+                    <button id="reset-btn-numerical" class="btn-danger" style="margin-top:10px;" onclick="resetNumerical()">Reset filter</button>
+                  </div>
 
                   <div>
-                    <h3>categorical attributes</h3>
+                    <h3 style="font-weight:bold">categorical attributes</h3>
                     <select id="node-catattributes">
-                      <option value="" selected>Choose...</option>
+                      <option value="" selected disabled>Choose...</option>
                     </select>
                   </div>
                   <div id ="multiselect-container">
@@ -597,14 +649,17 @@ $(function(){
                           </table>
                       </div>
                   </div>
-
                   <div>
-                    <h3>node search</h3>
+                    <button id="reset-btn-cat" class="btn-danger" style="margin-top:10px;" onclick="resetCat()">Reset filter</button>
+                  </div>
+                  <br />
+                  <span class="line"></span>
+                  <div>
+                    <h3 style="font-weight:bold">node search</h3>
                     <input type="text" id="labelInput" size="15">
                     <button id="searchSubmit">Search</button>
                     <span id=errorspace style="font-size: 12px; margin-top: 5px; color: red; display: block;"></span>
                   </div>
-                  <div id="dump" class="hidden"></div>
               </div>
         </div>
 
@@ -619,24 +674,25 @@ $(function(){
                         <label class="radio-inline"><input type="radio" name="optradio" id="radio-random" checked>Random</label>
                       </div>
                       <div class="radio">
+                        <label class="radio-inline"><input type="radio" name="optradio" id="radio-circle">Circular</label>
+                      </div>
+                      <div class="radio">
                         <label class="radio-inline"><input type="radio" name="optradio" id="radio-atlas">ForceAtlas2</label>
                       </div>
                       <div class="radio">
-                        <label class="radio-inline"><input type="radio" name="optradio" id="radio-frucht">FruchtermanReingold</label>
-                      </div>
-                      <div class="radio">
-                        <label class="radio-inline"><input type="radio" name="optradio" id="radio-circle">Circular</label>
+                        <label class="radio-inline" data-toggle="tooltip" data-placement="top" title="For large graphs, plotting could be slow"><input type="radio" name="optradio" id="radio-frucht">Fruchterman-Reingold</label>
+                        <img src="https://img.icons8.com/color/26/000000/error.png" data-toggle="tooltip" data-placement="top" style="width: 18px;" title="For large graphs, plotting could be slow">
                       </div>
 
                 </div>
         </div>
 
-        <div class="row">
+        <div class="row" style="width: fit-content;">
               <div class="col-sm-6" style="width:450px; margin-left: 30px;">
                     <div id="Key-player-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
                         <div class="panel-heading">
                             <div class="panel-title">
-                                <h2 class="underline">key-player</h2>
+                                <h2 class="underline">key player search</h2>
                             </div>
                         </div>
                         <div id="Key-player-results-space" class="panel-body">
@@ -648,7 +704,7 @@ $(function(){
         </div>
 
 
-        <div class="row">
+        <div class="row"  style="width: fit-content;">
               <div class="col-sm-6" style="width:450px; margin-left: 30px;">
                   <div id="Communities-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
                       <div class="panel-heading">
@@ -667,7 +723,7 @@ $(function(){
         </div>
 
 
-        <div class="row">
+        <div class="row"  style="width: fit-content;">
               <div class="col-sm-6" style="width:450px; margin-left: 30px;">
 
                   <div id="Set-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
@@ -691,7 +747,6 @@ $(function(){
           </div>
         </div>
         <div class="panel-body"></div> -->
-
   </div>
 
       <!-- The most basic usage of the Sigma JSON parser -->
@@ -721,10 +776,20 @@ $(function(){
                     template+="<tr><th>"+n+"</th> <td>"+node.attributes[n]+"</td></tr>"
                   }
               }
+
               template+='    </table>' +
               '  </div>' +
-              '  <div class="sigma-tooltip-footer">Number of connections: {{degree}}</div>'
+              '  <div class="sigma-tooltip-footer">' +
+              '  Neighbors ({{degree}}): '
               // Returns an HTML string:
+              console.log("Neighbors list:")
+              var neighbors = this.nodeneighbors(node.id);
+              var neighbors_names = [];
+              for(k in neighbors){
+                neighbors_names.push('<a href="#" onclick="onSearch(\\''+neighbors[k].label+'\\'.split(\\',\\'));return false;">'+neighbors[k].label+'</a>')
+              }
+              template+=neighbors_names.join(', ')+'  </div>';
+              // console.log(this.nodeneighbors(node.id))
               return Mustache.render(template, node);
 
               // Returns a DOM Element:
@@ -733,7 +798,7 @@ $(function(){
             }
           }
         };
-
+        const default_Node_color = '#1b9e77'
         const SIGMA_SETTINGS = {
           labelThreshold: 7,
           // labelSize: 'proportional',
@@ -743,7 +808,7 @@ $(function(){
           maxEdgeSize: 3,
           edgeColor: 'default',
           defaultEdgeColor: '#D1D1D1',
-          defaultNodeColor:	'#1b9e77',
+          defaultNodeColor:	default_Node_color,
           maxArrowSize: 5,
           minArrowSize: 3,
           sideMargin: 10
@@ -933,18 +998,23 @@ $(function(){
 
         function updatePane (graph) {
             // read nodes
+
             var numattr = ['degree']
             var catattr = []
+            var arrayattr = []
             graph.nodes().forEach(function(n) {
               // console.log("Nodo "+n.id+" Degree: "+graph.degree(n.id))
-              console.log(n.attributes)
+              console.log(n.attributes);
               for(var a in n.attributes){
                 if(!a.startsWith("__") && a!='name'){
-                  console.log(n.attributes[a])
-                  console.log("is numeric? "+ is_numeric(n.attributes[a]))
-                  if(is_numeric(n.attributes[a])){
+                  console.log(n.attributes[a]);
+                  console.log("is numeric? "+ is_numeric(n.attributes[a]));
+                  var isnumeric = is_numeric(n.attributes[a]);
+                  if(isnumeric == "array"){
+                    arrayattr.push(a)
+                  }else if(isnumeric=='numeric'){
                     numattr.push(a)
-                  }else{
+                  }else if (is_numeric(n.attributes[a])=='categorical'){
                     catattr.push(a)
                   }
                 }
@@ -952,25 +1022,28 @@ $(function(){
             })
 
 
+            arrayattr = new Set(arrayattr);
+            if(arrayattr.size>=1 && arrayattr!= undefined){
+              console.log("EHEHFBEJBFWEQIBFWQIKEBFWEIKBFWEIUFBHEIU")
+              alert("The following attributes have lists as value, and they will not be plotted:\\n- "+Array.from(arrayattr).join('\\n- '))
+            }
+            console.log("ARRAYATTR")
+            console.log(arrayattr)
+            arrayattr.forEach(function(elem){
+              console.log(elem+" will be removed, it's an object");
 
-            numattr = new Set(numattr)
+              numattr.remove(elem)
+              catattr.remove(elem)
+            });
+            numattr = new Set(numattr);
+            catattr = new Set(catattr);
             console.log("NUMATTR")
             console.log(numattr)
             AddToAttrDropdown(numattr, 'numeric', "node-numattributes")
 
-            catattr = new Set(catattr)
             console.log("CATATTR")
             console.log(catattr)
             AddToAttrDropdown(catattr, 'categorical', "node-catattributes")
-
-            // // reset button
-            // _.$('reset-btn').addEventListener("click", function(e) {
-            //   _.$('min-degree').value = 0;
-            //   _.$('min-degree-val').textContent = '0';
-            //   filter.undo().apply();
-            //   _.$('dump').textContent = '';
-            //   _.hide('#dump');
-            // });
 
             // // export button
             // _.$('export-btn').addEventListener("click", function(e) {
@@ -983,19 +1056,24 @@ $(function(){
 
         // Initialize the Filter API
         filter = new sigma.plugins.filter(s);
-
+        _.$('survivors').textContent = " "
         updatePane(s.graph);
+
         function applyMinAttrFilter(e) {
           var v = e.target.value;
-
           console.log(e)
           let attr_choice = $('#node-numattributes').val()
+          total_nodes = s.graph.nodes().length
+          survived_nodes = total_nodes
           console.log("V: "+v);
-          _.$('min-attr-val').textContent = v;
+
           if (attr_choice == 'degree'){
             filter
               .undo('attrfilter')
               .nodesBy(function(n) {
+                if(s.graph.degree(n.id) < v) {
+                  survived_nodes -= 1;
+                }
                 return s.graph.degree(n.id) >= v;
               }, 'attrfilter')
               .apply();
@@ -1006,12 +1084,17 @@ $(function(){
             filter
               .undo('attrfilter')
               .nodesBy(function(n) {
+                if(Number(n.attributes[attr_choice]) < v || n.attributes[attr_choice] == null) {
+                  survived_nodes -= 1;
+                }
                 return Number(n.attributes[attr_choice]) >= v;
               }, 'attrfilter')
               .apply();
           }
+        _.$('min-attr-val').textContent = v;
+        _.$('survivors').textContent = "Nodes: "+survived_nodes+"/"+total_nodes;
+          console.log("Survivors: ", survived_nodes)
         }
-
         _.$('slider-attr').addEventListener("input", applyMinAttrFilter);  // for Chrome and FF
         _.$('slider-attr').addEventListener("change", applyMinAttrFilter); // for IE10+, that sucks
 
@@ -1023,9 +1106,11 @@ $(function(){
             dropdown.attr("onchange", "$('#slider-container').show();\\
                            let attr_choice = $('#node-numattributes').val();\\
                            console.log('Hai scelto '+attr_choice);\\
-                            _.$('slider-attr').max = CalculateRange(attr_choice);\\
-                            _.$('max-attr-value').textContent = CalculateRange(attr_choice);\\
-                             _.$('attr-slider-label').textContent = 'min '+attr_choice+' '")
+                           var maxvalue = CalculateRange(attr_choice);\\
+                            _.$('slider-attr').max = maxvalue;\\
+                            _.$('max-attr-value').textContent = maxvalue;\\
+                            $('#reset-btn-numerical').show();\\
+                             _.$('attr-slider-label').textContent = 'min \\"'+attr_choice+'\\": '")
             // min degree
             // _.$('slider-attr').max = maxDegree;
             // _.$('max-attr-value').textContent = maxDegree;
@@ -1033,6 +1118,7 @@ $(function(){
             dropdown.attr("onchange", "let attr_choice = $('#node-catattributes').val();\\
                            console.log('Hai scelto '+attr_choice);\\
                            $('#multiselect-container').show();\\
+                           $('#reset-btn-cat').show();\\
                            FillMultiselect(attr_choice);\\
                            ")
           }
@@ -1047,6 +1133,17 @@ $(function(){
 
         function CalculateRange(attr){
           values = []
+          null_values = []
+          console.log("I AM IN RANGE");
+          _.$('survivors').textContent = '';
+          _.$('min-attr-val').textContent = '0';
+          s.graph.nodes().forEach(function(n) {
+            n.color = default_Node_color;
+            n.originalColor = default_Node_color;
+          });
+          _.$('resize-nodes-box').checked = false;
+          _.$('slider-attr').value = 0;
+          s.refresh();
           if (attr == 'degree'){
             var maxDegree = 0;
             s.graph.nodes().forEach(function(n) {
@@ -1058,12 +1155,19 @@ $(function(){
           }else{
             s.graph.nodes().forEach(function(n) {
               values.push(Number(n.attributes[attr]));
+              if(n.attributes[attr] == null){
+                console.log("CAMBIA ORA");
+                n.originalColor = "#ededed"
+                n.color = "#ededed";
+              }
             })
-            console.log("Max for attr "+attr+" is "+Math.max.apply(null, values))
+            s.refresh();
+            console.log("Max for attr "+attr+" is "+Math.max.apply(null, values.filter(Boolean)))
             $('#resize-box-container').show()
-            return Math.max.apply(null, values)
+            return Math.max.apply(null, values.filter(Boolean))
           }
         }
+
 
         function ResizeByAttr(){
           var attr = $('#node-numattributes').val()
@@ -1088,20 +1192,30 @@ $(function(){
           })
           let unique = [...new Set(values)];
           unique = unique.sort();
-          console.log(unique)
           var colors = palette('mpn65', unique.length);
-          for(u = 0; u < unique.length; u++){
-            var element = $('#multiselect-table');
-            element.append('<tr>\\
-                <td class="col-xs-1"><input type="checkbox" id="'+unique[u]+'-box" onclick="update(this.checked, hexc(document.getElementById(\\''+unique[u]+'-button\\').style[\\'background-color\\']) , \\''+attr+'\\', \\''+unique[u]+'\\')"></td>\\
-                <td>'+unique[u]+'</td>\\
-                <td><button id="'+unique[u]+'-button" style="width:15px; height:15px;"></button></td>\\
-              </tr>');
-               new jscolor($('#'+unique[u]+'-button').last()[0], {valueElement:'valueElement',value:colors[u], onFineChange:'update($(\\'#'+unique[u]+'-box\\').is(\\':checked\\'), this, "'+attr+'" ,"'+unique[u]+'")'});
+          var element = $('#multiselect-table');
+          if(unique.length <=65){
+              console.log("CI SIAMO LENGTH A POSTO")
+              for(u = 0; u < unique.length; u++){
+                element.append('<tr>\\
+                    <td class="col-xs-1"><input type="checkbox" name="cat-checkbox" id="'+unique[u]+'-box" onclick="update(this.checked, hexc(document.getElementById(\\''+unique[u]+'-button\\').style[\\'background-color\\']) , \\''+attr+'\\', \\''+unique[u]+'\\')"></td>\\
+                    <td>'+unique[u]+'</td>\\
+                    <td><button id="'+unique[u]+'-button" style="width:15px; height:15px;"></button></td>\\
+                  </tr>');
+                  console.log(u)
+                  console.log(unique.length)
+
+                   console.log("COLORE: "+colors[u])
+                   new jscolor($('[id="'+unique[u]+'-button"]').last()[0], {valueElement:'valueElement',value:colors[u], onFineChange:'update($(\\'[id="'+unique[u]+'-box"]\\').is(\\':checked\\'), this, "'+attr+'" ,"'+unique[u]+'")'});
+              }
+          }else{
+            console.log("MALE, torppi values, addio")
+            element.append('<span style="color:red"><i>Too many values, the attribute cannot be displayed</i></span>')
           }
 
 
         }
+
 
         function update(checked, jscolor, attr, val) {
             console.log("Dsiplayed color is " + jscolor)
@@ -1116,14 +1230,42 @@ $(function(){
                     n.color = "#"+jscolor
                     n.originalColor = "#"+jscolor
                   }else{
-                    n.color = "#1b9e77"
-                    n.originalColor = "#1b9e77"
+                    n.color = default_Node_color;
+                    n.originalColor = default_Node_color;
                   }
                 }
             })
             s.refresh();
         }
 
+
+        function resetNumerical(){
+          _.$('slider-attr').value = 0;
+          _.$('min-attr-val').textContent = '0';
+          // _.$('resize-nodes-box').checked = false;
+          // $('#survivors').hide();
+          _.$('survivors').textContent = '';
+          filter.undo().apply();
+          // $('#node-numattributes').get(0).selectedIndex = 0;
+          // _.$('slider-label').textContent = ""
+        }
+
+
+        function resetCat(){
+
+          var items=document.getElementsByName('cat-checkbox');
+  				for(var i=0; i<items.length; i++){
+  					if(items[i].type=='checkbox'){
+  						items[i].checked=false;
+            }
+
+  				}
+          s.graph.nodes().forEach(function(n){
+            n.color = default_Node_color;
+            n.originalColor = default_Node_color;
+          });
+          s.refresh();
+        }
 
         var tooltips = sigma.plugins.tooltips(s, s.renderers[0], config);
         sigma.plugins.relativeSize(s, 1);
@@ -1385,6 +1527,8 @@ $(function(){
 
 
         $('#slider-container').hide();
+        $('#reset-btn-numerical').hide();
+        $('#reset-btn-cat').hide();
         $('#multiselect-container').hide();
         if (document.getElementById('Key-player-results-pane') !== null){
           $('#Key-player-results-pane').hide();
@@ -1423,6 +1567,8 @@ $(function(){
                 class="btn-secondary" id="dropdown-'+command+'-algorithm" \\
                 onchange="\\
                   document.getElementById(\\'dropdown-'+command+'-run\\').style.visibility = \\'visible\\'; \\
+                  document.getElementById(\\''+command+'-buttons\\').style.visibility = \\'hidden\\'; \\
+                  $(\\'#'+command+'-solutions-pane\\').lobiPanel(\\'close\\'); \\
                   var choice = getChoice(\\'dropdown-'+command+'-algorithm\\'); \\
                   fillDropdown(\\'Run\\', Object.keys(reportData[\\''+command+'\\'][choice]), \\'dropdown-'+command+'-run\\')\\
                 "\\
@@ -1458,21 +1604,49 @@ $(function(){
         }
 
         function is_numeric(str){
-            return !isNaN(str);
+            if(typeof str == 'object' && str != null){
+              return "array";
+            }else if(str != null && !isNaN(str)){
+      		    return "numeric";
+      	    }else if (typeof(str)=='string'){
+      		    return "categorical";
+            }
         }
 
         s.refresh()
   </script>
+  <div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="warningModalLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 
 </html>
+
 
 """
 
 
 
 css_template = u"""
+
+
 
 
 
@@ -1578,6 +1752,10 @@ h3, .h3 {
     font-size: 20px;
 }
 
+h4, .h4 {
+    font-variant: all-small-caps !important;
+}
+
 hr {
     margin-top: 5px;
     margin-bottom: 15px;
@@ -1680,6 +1858,7 @@ input[type=checkbox] {
 }
 
 #multiselect-table>tbody>tr>td {
+    word-break: break-word;
     padding: 4px;
     border-top: 0px solid #ddd;
 }
@@ -1689,7 +1868,6 @@ input[type=checkbox] {
     margin-top: 15px;
     border: 1px solid #ceead9;
 }
-
 
 
 

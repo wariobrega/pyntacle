@@ -262,6 +262,10 @@ class PyntacleExporter:
             print(v_id, v['name'])
             v_attributes = v.attributes()
             print("ATTRIBUTI IN EXPORT")
+            for a in v_attributes:
+                if v_attributes[a]!=None and ':' in v_attributes[a]:
+                    v_attributes[a] = v_attributes[a].replace(':','_')
+
             parent = ','.join(v_attributes['__parent'])
             if parent not in colorsdict:
                 colorsdict[parent] = palette[col_count]
@@ -288,6 +292,9 @@ class PyntacleExporter:
             e_source = str(e.source)
             e_target = str(e.target)
             e_attributes = e.attributes()
+            for a in e_attributes:
+                if e_attributes[a]!=None and ':' in e_attributes[a]:
+                    e_attributes[a] = e_attributes[a].replace(':','_')
             e_size = e_attributes.pop('size', None)
             if e_size:
                 e_size = float(e_size)
