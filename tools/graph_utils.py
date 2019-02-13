@@ -1,15 +1,11 @@
-"""
-Generic utilities for graph management and safety checks
-"""
-
-__author__ = "Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
-__copyright__ = "Copyright 2018, The Pyntacle Project"
-__credits__ = ["Ferenc Jordan"]
-__version__ = "0.2.4"
-__maintainer__ = "Daniele Capocefalo"
-__email__ = "d.capocefalo@css-mendel.it"
-__status__ = "Development"
-__date__ = "27 October 2016"
+__author__ = u"Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
+__copyright__ = u"Copyright 2018, The Pyntacle Project"
+__credits__ = [u"Ferenc Jordan"]
+__version__ = u"1.0.0"
+__maintainer__ = u"Daniele Capocefalo"
+__email__ = "bioinformatics@css-mendel.it"
+__status__ = u"Development"
+__date__ = u"26/11/2018"
 __license__ = u"""
   Copyright (C) 20016-2017  Tommaso Mazza <t,mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
@@ -34,293 +30,365 @@ __license__ = u"""
 from config import *
 from igraph import Graph
 import numpy as np
-from exceptions.illegal_graph_size_error import IllegalGraphSizeError
-from exceptions.missing_attribute_error import MissingAttributeError
 from exceptions.notagraph_error import NotAGraphError
 from exceptions.unsupported_graph_error import UnsupportedGraphError
 from exceptions.wrong_argument_error import WrongArgumentError
 from exceptions.multiple_solutions_error import MultipleSolutionsError
-
+from tools.enums import CmodeEnum
+from tools.add_attributes import AddAttributes
+from internal.name_checker import attribute_name_checker
 
 class GraphUtils:
-    """
-    Generic utilities for graph management and safety checks
-    """
 
     logger = None
 
     def __init__(self, graph: Graph):
+        r"""
+        A set of generic utilities for determining the structural integrity of the graph and retrieve some of its parts.
+        Additionally, it contains methods to initialize the :py:class:`~igraph.Graph` object for Pyntacle usage.
+
+        :param igraph.Graph graph: a :py:class:`~igraph.Graph` object.
+        :raise NotAGraphError: if ``graph`` is not an ``igraph.Graph`` object
+        """
         self.logger = log
 
         if not isinstance(graph, Graph):
-            raise NotAGraphError("input graph is not a graph")
-
-        if graph.vcount() < 1:
-            self.logger.fatal("This graph does not contain vertices")
-            raise IllegalGraphSizeError("This graph does not contain vertices")
-
-        elif graph.ecount() < 1:
-            self.logger.fatal("This graph does not contain edges")
-            raise IllegalGraphSizeError("This graph does not contain edges")
+            raise NotAGraphError(u"'graph' if not an igraph.Graph object ")
 
         else:
-            self.__graph = graph
+            self.graph = graph
 
-    def check_graph(self) -> bool:
-        """
-        Check that the input graph is consistent according to the Pyntacle's minimum requirements
-        :raise UnsupportedGraphError: An error occurred because the graph is not compliant with the Pyhtacle's
-        minimum requirements
-        :raise KeyError: An error occurred because nodes must hold a 'name' attribute
-        :raise TypeError: An error occurred because node's name attribute must be of type *string*
-        :return: Whether the graph is sound. If it is not, an exception is raised
-        """
-        # TODO: Handle exceptions wherever this method is used
-        if Graph.is_directed(self.__graph):
-            raise UnsupportedGraphError("Input graph is direct, pyntacle supports only undirected graphs")
-        elif not Graph.is_simple(self.__graph):
-            raise UnsupportedGraphError("Input Graph contains self loops and multiple edges")
-        elif "name" not in self.__graph.vs().attributes():
-            raise KeyError("nodes must have the attribute  \"name\"")
-        elif not all(isinstance(item, str) for item in self.__graph.vs()["name"]):
-            raise TypeError("node \"name\" attribute must be a string")
-        elif len(set(self.__graph.vs()["name"])) != len(self.__graph.vs()["name"]):
-            raise UnsupportedGraphError("Node names must be unique, check the \"name\" attribute in graph")
-        else:
-            return True
+    def set_graph(self, graph: Graph):
+        r"""
+        Replaces the :py:class:`igraph.Graph` object with another one.
 
-    def check_index_list(self, index_list):
+        :param graph: a :py:class:`igraph.Graph` object
         """
-        Check that an index list is consistent with respect to the input `igraph.Graph` object (so, that indices are not
-        negative integers and that are within the total number of vertices' boundaries
-        :param list index_list: a list of integers
-        """
+        self.graph = graph
         self.check_graph()
 
-        if not isinstance(index_list, list):
-            raise ValueError("index list is not a list")
+    def check_graph(self):
 
-        if len(index_list) < 0:
-            raise WrongArgumentError("List is empty")
+        r"""
+        Check that the input graph is compliant to the `Pyntacle minimum  graph requirements <http://pyntacle.css-mendel.it/requirements.html>`_.
+        Raise an appropriate error if it is not so, otherwise return :py:class:`None`.
 
-        for ind in index_list:
+        :raise UnsupportedGraphError: if the :py:class:`igraph.Graph` is not compliant to `Pyntacle minimum requirements <http://pyntacle.css-mendel.it/>`_.
+        :raise KeyError: If the graph vertices does not hold a vertex ``name`` attribute
+        :raise TypeError: if any of the :py:class:`~igraph.Graph` attributes types differs from the one listed in `Pyntacle minimum requirements <http://pyntacle.css-mendel.it/>`_.
+        """
+
+        if Graph.is_directed(self.graph):
+            raise UnsupportedGraphError(u"Graph is direct")
+        if not Graph.is_simple(self.graph):
+            raise UnsupportedGraphError(u"Graph contains self-loops and multiple edges")
+        if self.graph.vcount() < 2:
+            raise UnsupportedGraphError(u"Graph must contain at least two nodes")
+
+        if self.graph.ecount() < 1:
+            raise UnsupportedGraphError(u"Graph must contain at least one edge")
+
+        if "name" not in self.graph.vs.attributes() and all(x == str for x in self.graph.vs()["name"]):
+            raise KeyError(u"Nodes must have the attribute 'name' and it must be filled with strings")
+
+        if len(set(self.graph.vs["name"])) != len(self.graph.vs["name"]):
+            raise UnsupportedGraphError(u"Node 'name' attribute  must be unique, check the \"name\" attribute in graph")
+
+        if "name" not in self.graph.attributes():
+            raise UnsupportedGraphError(u"Graph must have a 'name' attribute")
+
+        else:
+            if not isinstance(self.graph["name"], list):
+                raise TypeError(u"Graph 'name' attribute must be a list.")
+            else:
+                if not any([isinstance(x, str) for x in self.graph["name"]]):
+                    raise TypeError(u"One of the graph 'names' is not a string")
+
+                for name in self.graph["name"]:
+
+                    try:
+                        attribute_name_checker(name)
+                    except ValueError:
+                        raise UnsupportedGraphError(u"Any of the Graph 'name' attribute values contains illegal characters.")
+
+        if any(x not in self.graph.attributes() for x in ["sif_interaction_name", "implementation"]):
+            raise UnsupportedGraphError(u"One of the Pyntacle reserved graph attribute is missing, see goo.gl/MCsnd1 for more informations and initialize the `graph_initializer` method in `tools.graph_utils` To initialize your graph.")
+
+        else:
+            if not isinstance(self.graph["sif_interaction_name"], (str, type(None))):
+                raise TypeError("sif_interaction_name must be either of type ''str' or None")
+
+            if not isinstance(self.graph["implementation"], CmodeEnum):
+                raise TypeError("implementation must be filled with one of the CmodeEnums")
+
+        if any(x not in self.graph.vs.attributes() for x in ["parent"]):
+            raise UnsupportedGraphError(u"Pyntacle reserved vertex attribute missing, see goo.gl/MCsnd1 for more informations and initialize the `graph_initializer` method in `tools.graph_utils` To initialize your graph.")
+        else:
+            if not isinstance(self.graph.vs["parent"], (list, type(None))):
+                raise TypeError("`parent` node attribute must be either a list or None")
+
+            else:
+                # print("PARENT PROBLEM")
+                # print(self.graph.vs["parent"])
+                # input()
+                if not any([isinstance(x, (str, list)) for x in self.graph.vs["parent"]]):
+                    raise TypeError(u"One of the graph 'parent' attribute values is not a string")
+
+        if any(x not in self.graph.es.attributes() for x in ["sif_interaction", "adjacent_nodes"]):
+            raise UnsupportedGraphError(u"Pyntacle reserved edge attribute missing, see goo.gl/MCsnd1 for more informations")
+
+        else:
+            if not any(isinstance(x, (str, type(None))) for x in self.graph.es["sif_interaction"]):
+                raise TypeError("sif_interaction must be either of type ''str' or None")
+            if not any(isinstance(x, tuple) for x in self.graph.es["adjacent_nodes"]):
+                raise TypeError("adjacent_nodes must be a tuple of strings")
+
+    def check_index_list(self, indices: list):
+        r"""
+        Check that an index list (a list of integers representing the numeric indices of the graph vertices)
+        is present into the input :py:class:`~igraph.Graph` objects. These indices should be positive integers ranging
+        from :math:`0` to :math:`N-1`, where :math:`N` is the size of the graph.
+
+        :param list indices: a list of  positive integers
+        :raise ValueError: if ``indices`` is not a list of integers
+        :raise WrongArgumentError: if any of the elements in ``indices`` does not exists in the graph.
+        """
+
+        if not isinstance(indices, list):
+            raise ValueError(u"index list is not a list")
+
+        if len(indices) == 0:
+            raise WrongArgumentError(u"List is empty")
+
+        for ind in indices:
             if not isinstance(ind, int) or ind < 0:
                 raise ValueError("indices must be positive integers")
 
-        if set(index_list) > set(self.__graph.vs.indices):
-            self.logger.error("The input node index '{}' does not exist in the graph".format(index_list))
-            raise WrongArgumentError("The input node index '{}' does not exist in the graph".format(index_list))
+        if set(indices) > set(self.graph.vs.indices):
+            raise WrongArgumentError(u"The input node index '{}' does not exist in the graph".format(indices))
 
         return None
 
-    def check_name_list(self, names_list: list):
-        """
-        Checks that a single node or a list of node *names* (the graph.vs["name"] attribute) is present in the graph
-        :param names_list: a single node name (as a string) or a list of node names (a list of strings)
-        """
-        self.check_graph()
-        # print(names_list)
-        # print (self.graph.vs()["name"])
-        if isinstance(names_list, str):
-            names_list = [names_list]
+    def nodes_in_graph(self, names: list or str) -> bool:
+        r"""
+        Scans a list of strings and checks whether they are present in the input :py:class:`~igraph.Graph` vertex names
+        (by looking at the vertex ``name`` attribute).
 
-        if not isinstance(names_list, list):
-            raise ValueError("node names list is not a list")
-
-        if len(names_list) < 0:
-            raise WrongArgumentError("List is empty")
-
-        for name in names_list:
-            if not isinstance(name, str):
-                raise ValueError("node names must be strings")
-
-            if name not in self.__graph.vs()["name"]:
-                raise MissingAttributeError("node {} is not in vertex \"name\" attribute".format(name))
-
-        if len(list(set(names_list))) != len(names_list):
-            self.logger.warning("The names list contains duplicated node names, "
-                                "so there will be a double index in index list")
-
-    def attribute_in_nodes(self, attribute):
-        """
-        Checks that a given attribute (such as the ones stored in `tools/misc/enums`) is present as  node attribute
-        (so is in graph.vs.attributes())
-        :param attribute: the attribute you're looking for
-        :raise MissingAttributeError: if the attribute is in node attributes
-        """
-        self.check_graph()
-
-        if attribute not in self.__graph.vs().attributes():
-            raise MissingAttributeError("attribute specified has not been initialized in node attributes")
-
-    def attribute_in_edges(self, attribute):
-        """
-        Checks that a given attribute (such as the ones stored in `tools/misc/enums`) is present as edge attribute
-        (so is in graph.es.attributes())
-        :param attribute: the attribute you're looking for
-        :raise MissingAttributeError: if the attribute is not in edge attributes()
-        """
-        self.check_graph()
-
-        if attribute not in self.__graph.es().attributes():
-            raise MissingAttributeError("attribute specified has not been initialized in edge attributes")
-
-    def attribute_in_graph(self, attribute):
-        """
-        Checks that a given attribute (such as the ones stored in `tools/misc/enums`) is present as graph attribute
-        (so is in graph.attributes())
-        :param attribute: the attribute you're looking for
-        :raise MissingAttributeError: if the attribute is not in graph attributes()
-        """
-        self.check_graph()
-
-        if attribute not in self.__graph.attributes():
-            raise MissingAttributeError("attribute specified has not been initialized in graph attributes")
-
-    def check_attribute_type(self, attribute, attribute_types):
-        """
-        Check that attributes are of the specified type in the input `igraph.Graph` object
-        :param attribute: a the input attribute to be checked
-        :param attribute_types: a type of enumerator that will be screened
-        :raise ValueError: if the attribute type is not of the selected enumerator
-        """
-        attribute_types = (attribute_types,)
-        if not isinstance(attribute, attribute_types):
-            raise MissingAttributeError("the value {} is not a  legal AttributeType".format(str(attribute)))
-
-    def check_attributes_types(self, attributes_list: list, attribute_types):
-        """
-        Check that attributes are coherent and present in the graph
-
-        :param attributes_list: a list of attributes asked to be reported
-        :param attribute_types: a type of enumerator or a list of enumerators that will be screened
-        :raise ValueError: if the attribute type is not of the selected enumerator
+        :param list names: a list of strings, corresponding to the vertex ``name`` attribute
+        :return bool: ``True`` if all the element in ``names`` are present in the input :py:class:`~igraph.Graph`, ``False`` otherwise
+        :raise ValueError: if ``names`` is not a list, an empty list or if any of the elements in ``names`` is not a :py:class:`str`
         """
 
-        if isinstance(attribute_types, list):
-            attribute_types = tuple(attribute_types)
+        if isinstance(names, str):
+            names = [names]
 
-        else:
-            attribute_types = (attribute_types,)
+        elif not isinstance(names, list):
+            raise ValueError(u"`names` must be a list")
 
-        for elem in attributes_list:
-            if not isinstance(elem, attribute_types):
-                raise MissingAttributeError("the value {} is not a  legal AttributeType".format(str(elem)))
-
-    def get_node_names(self, index_list: list) -> list:
-        """
-        Take a list of integers returns the corresponding graph.vs["name"] attribute of the node that matches each index
-        :param list index_list: a list of integers containing indices present in graph (will check for that)
-        :return: a list of the corresponding graph.vs["name"] strings
-        """
-        self.check_graph()
-        self.check_index_list(index_list)
-        names_list = self.__graph.vs(index_list)["name"]
-        return names_list
-
-    def get_node_indices(self, node_names) -> list:
-        """
-        Return a list of indices of the node names passed in input.
-        :param node_names: A single string or a list of strings containing node names in the graph
-        :return: a list of indices of the corresponding node names given in input. The order of the input list
-        is preserved
-        """
-
-        if not isinstance(node_names, list):
-            names = [node_names]
-        else:
-            names = node_names
-
-        self.check_graph()
-        self.check_name_list(node_names)
-        index_list = []
+        if len(names) < 0:
+            raise ValueError(u"`names` is empty")
 
         for name in names:
-            select = self.__graph.vs.select(name=name)
-            if len(select) > 1:
-                raise IndexError("name is not unique, node names must be unique, plese check your graph")
+            if not isinstance(name, str):
+                raise ValueError(u"Node names must be strings")
 
-            else:
-                index = select[0].index
-                index_list.append(index)
+            if name not in self.graph.vs()["name"]:
+                sys.stdout.write("node {} is not in vertex `name` attribute".format(name))
+                return False
 
-        return index_list
+        return True
 
-    def get_attribute_names(self, attribute_list: list, type="graph") -> list:
+    def attribute_in_nodes(self, attribute: str) -> bool:
+        r"""
+        Checks that a given attribute name is present in the input :py:class:`igraph.Graph` object as vetex (node) attribute.
+
+        :param str attribute: the name of a vertex  attribute of interest.
+        :return bool: ``True`` if the attribute is present in the vertex attributes, ``False`` otherwise.
         """
-        given a specified enumerator (such as the ones stored in `tools/misc/enums`, check iuf the attribute is initialized
-        at the corresponding `type` level (choices are "graph", "node", "edge")
 
-        :param attribute_list:
-        :param type:
-        :return:
+        if attribute not in self.graph.vs().attributes():
+            return False
+        return True
+
+    def attribute_in_edges(self, attribute: str) -> bool:
+        r"""
+        Checks that a given attribute name is present in the input :py:class:`igraph.Graph` object as edge attribute.
+
+        :param str attribute: the name of an edge attribute of interest.
+        :return bool: ``True`` if the attribute is present in the edge attributes, ``False`` otherwise.
         """
-        self.check_graph()
 
-        attribute_names = []
+        if attribute not in self.graph.es().attributes():
+            return False
 
-        if type == "graph":  # search for graph attributes
-            for attribute in attribute_list:
-                try:
-                    attr = self.__graph[attribute.name]
-                    attribute_names.append(attribute.name)
-                    if attr is None:
-                        self.logger.warning("Attribute specified has None value")
+        return True
 
-                except KeyError:
-                    self.logger.warning("Attribute {} is not in graph".format(attribute))
+    def attribute_in_graph(self, attribute: str) -> bool:
+        r"""
+        Checks that a given attribute name is present in the input :py:class:`igraph.Graph` object as graph attribute.
 
-        elif type == "node":  # search for node attributes
-            for attribute in attribute_list:
+        :param str attribute: the name of a graph attribute of interest.
+        :return bool: ``True`` if the attribute is present in  the graph attributes, ``False`` otherwise.
+        """
 
-                if attribute.name not in self.__graph.vs().attributes():
-                    self.logger.warning("Attribute {} not present in nodee attributes".format(attribute))
+        if attribute not in self.graph.attributes():
+            return False
+
+        return True
+
+    def get_node_names(self, indices: list) -> list:
+        r"""
+        Takes a list of integers that matches the node indices of the input :py:class:`~igraph.Graph` object and returns
+        the corresponding vertex ``name`` attribute of each node matching each index.
+
+        :param list indices: A list of integers containing indices present in graph. Inherits the :func:`~pyntacle.tools.graph_utils.GraphUtils.check_index_list` for checking the integrity of the ``indices`` argument.
+        :return: A list of strings, storing the corresponding vertex ``name`` attribute
+        """
+
+        self.check_index_list(indices)
+        names_list = self.graph.vs(indices)["name"]
+        return names_list
+
+    def get_node_indices(self, nodes: str or list) -> list:
+        r"""
+        Return a list of integers representing the corresponding vertex index of each of the elements in the ``nodes``
+        argument (a :py:class:`str` or a py:class:`list` storing the vertex ``name`` attribute)
+
+        :param str, list nodes: A string or a list of strings storing the vertex ``name`` attribute
+        :return list: a list of indices of the corresponding node names given in input. The order of the input list is preserved
+        :raise IndexError: if the node ``name`` of the input graph are not unique
+        :raise ValueError: if any of the elements in ``nodes`` is not present in the input graph.
+        """
+
+        if not isinstance(nodes, list):
+            names = [nodes]
+        else:
+            names = nodes
+
+        if self.nodes_in_graph(nodes):
+            index_list = []
+
+            for name in names:
+                #todo this should not be here as it is a graph property.
+                select = self.graph.vs.select(name=name)
+                if len(select) > 1:
+                    raise IndexError(u"name is not unique, node names must be unique, please check your graph")
 
                 else:
-                    attribute_names.append(attribute.name)
+                    index = select[0].index
+                    index_list.append(index)
 
-        elif type == "edge":
-            for attribute in attribute_list:
-
-                if attribute.name not in self.__graph.es().attributes():
-                    self.logger.warning("Attribute {} not present in edge attributes".format(attribute))
-
-                else:
-                    attribute_names.append(attribute.name)
+            return index_list
 
         else:
-            raise ValueError("attribute type not supported. Legal options are \"graph\", \"node\", \"edge\"")
+            raise ValueError(u"One of the `nodes` is not present in the input Graph")
 
-        return attribute_names
+    def get_largest_component(self) -> Graph:
+        r"""
+        Returns the largest component component of a :py:class:`~igraph.Graph`, while retaining all the attributes
+        of the original graph at all levels.
 
-    def get_largest_component(self):
+        .. warning: If the graph has two largest components of the same size, the method will raise an error.
+
+        :return igraph.Graph: a :py:class:`~igraph.Graph` object storing the largest component. all other components will be pruned.
+        :raise MultipleSolutionsError: if there is more than one largest component in the input :py:class:`~igraph.Graph`
         """
-        Return the maximum component of a graph (a subrgraph of the original one)
 
-        :return: a graph object with the only the largest component. If more than one component if present
-        :raise MultipleSolutionsError: if there is more than one largest component
-        """
-        
-        self.logger.info("Getting the largest component of the input graph")
+        self.logger.info(u"Getting the largest component of the input graph")
 
-        components = self.__graph.components()
+        components = self.graph.components()
 
         comp_len = [len(comp) for comp in components]
-        self.logger.info("Graph has the following components: {}".format(",".join(map(str, comp_len))))
+        self.logger.info(u"Graph has the following components: {}".format(",".join(map(str, comp_len))))
 
         max_comp = max(comp_len)
-        max_ind= np.argmax(comp_len)
+        max_ind = np.argmax(comp_len)
 
         max_list = [i for i, x in enumerate(comp_len) if x == max_comp]
 
         if len(max_list) > 1:
-            raise MultipleSolutionsError("there are {} largest components, cannot choose one".format(len(max_list)))
+            raise MultipleSolutionsError(u"There are {} largest components, cannot choose one".format(len(max_list)))
 
         else:
-            subgraph = self.__graph.induced_subgraph(components[max_ind])
+            subgraph = self.graph.induced_subgraph(components[max_ind])
 
             self.logger.info(
-                "Largest component has {0} nodes and {1} edges (out of {2} nodes and {3} edges in total)".format(
-                    subgraph.vcount(), subgraph.ecount(), self.__graph.vcount(), self.__graph.ecount()))
+                u"Largest component has {0} nodes and {1} edges (out of {2} nodes and {3} edges in total)".format(
+                    subgraph.vcount(), subgraph.ecount(), self.graph.vcount(), self.graph.ecount()))
 
             return subgraph
+
+    def graph_initializer(self, graph_name: str, node_names: list or None = None):
+        r"""
+        Transform the input :py:class:`igraph.Graph` object into a network that is compliant to the
+        Pyntacle `Minimum requirements <http://pyntacle.css-mendel.it/requirements.html>`_.
+
+        :param str graph_name: The network name (will be stored in the graph ``name`` attribute). This strig must not contain illegal characters (see the Pyntacle `Minimum Requirements <http://pyntacle.css-mendel.it/requirements.html>`_ for more info on the illegal characters.
+        :param str, None node_names: optional, a list of strings matching the total number of vertices of the graph. Each item in the list becomes the vertex ``name`` attribute sequentially (index-by-index correspondance). Defaults to py:class:`None` (node ``name`` attribute is filled by node indices).
+        :raise: ValueError: if the ``graph_name`` argument contains illegal characters or if ``node_names`` is not of the same size of the number of graph vertices.
+        :raise: WrongArgumentError: if ``node_names`` is not a list of strings.
+        """
+
+        try:
+            attribute_name_checker(graph_name)
+        except ValueError:
+            sys.stderr.write("Graph 'name' attribute contains illegal characters.\n")
+            sys.exit(1)
+
+        self.graph.to_undirected()  # reconvert graph to directed
+        if "name" not in self.graph.attributes():
+            self.logger.info(u"adding file name to graph name")
+            AddAttributes.add_graph_name(self.graph, graph_name)
+
+        # add vertex names
+        if "name" not in self.graph.vs.attributes():
+            if node_names is None:
+                self.logger.info(u"Adding node names to graph corresponding to their indices")
+                self.graph.vs()["name"] = [str(x.index) for x in self.graph.vs()]
+
+            else:
+                if not isinstance(node_names, list) or not all(isinstance(item, str) for item in node_names):
+                    raise WrongArgumentError(u"`node_names` argument must be a list of strings")
+
+                if len(node_names) != self.graph.vcount():
+                    raise ValueError(u"`node_names` argument must be of the same length of vertices")
+
+                self.logger.info(u"Adding node names to graph using the provided node names")
+                self.graph.vs["name"] = node_names
+
+        # add parent name to vertices
+        if "parent" not in self.graph.vs().attributes():
+            self.logger.info(u"Adding reserved attribute 'parent' to the vertices")
+            AddAttributes.add_parent_name(self.graph)
+
+        if "adjacent_nodes" not in self.graph.es().attributes():
+            # add edge vertices names as an attribute 'adjacent_vertices'
+            self.logger.info(u"Adding source and target names as \"adjacent_nodes\" attribute to edges")
+            AddAttributes.add_edge_names(self.graph)
+
+        # for sif file conversion purposes
+        if not "sif_interaction_name" in self.graph.attributes():
+            self.graph["sif_interaction_name"] = None
+
+        if not "sif_interaction" in self.graph.es().attributes():
+            self.graph.es()["sif_interaction"] = None
+
+        # Adding implementation info for functions that require it
+        sp_implementation = CmodeEnum.igraph
+
+        n_nodes = self.graph.vcount()
+
+        if n_nodes > 100:
+            density = (2 * (self.graph.ecount())) / (n_nodes * (n_nodes - 1))
+            if density < 0.5 and n_nodes <= 500:
+                sp_implementation = CmodeEnum.igraph
+            else:
+                if cuda_avail:
+                    sp_implementation = CmodeEnum.gpu
+                else:
+                    if n_cpus >= 2:
+                        sp_implementation = CmodeEnum.cpu
+                    else:
+                        sp_implementation = CmodeEnum.igraph
+
+        self.graph["implementation"] = sp_implementation

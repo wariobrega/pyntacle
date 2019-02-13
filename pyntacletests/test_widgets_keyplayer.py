@@ -1,11 +1,11 @@
-__author__ = "Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
-__copyright__ = "Copyright 2018, The Pyntacle Project"
-__credits__ = ["Ferenc Jordan"]
-__version__ = "0.2.4"
-__maintainer__ = "Daniele Capocefalo"
-__email__ = "d.capocefalo@css-mendel.it"
-__status__ = "Development"
-__date__ = "27 February 2018"
+__author__ = u"Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
+__copyright__ = u"Copyright 2018, The Pyntacle Project"
+__credits__ = [u"Ferenc Jordan"]
+__version__ = u"1.0.0"
+__maintainer__ = u"Daniele Capocefalo"
+__email__ = "o@css-mendel.it"
+__status__ = u"Development"
+__date__ = u"26/11/2018"
 __license__ = u"""
   Copyright (C) 2016-2018  Tommaso Mazza <t,mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
@@ -34,7 +34,8 @@ from cmds.keyplayer import KeyPlayer as keyplayer_command
 from tools.enums import *
 import re
 from pyntacletests import getmd5
-
+from multiprocessing import cpu_count
+n_cpus = cpu_count()-1
 
 class DummyObj:
     pass
@@ -50,18 +51,17 @@ class WidgetTestKeyplayer(unittest.TestCase):
         self.Args.input_file = os.path.join(current_dir, 'pyntacletests/test_sets/input/figure_8.txt')
         self.Args.largest_component = False
         self.Args.m_reach = 2
-        self.Args.max_distances = None
+        self.Args.max_distance = None
         self.Args.no_header = False
         self.Args.no_plot = True
         self.Args.plot_dim = None
         self.Args.plot_format = 'pdf'
         self.Args.report_format = 'txt'
         self.Args.save_binary = False
-        self.Args.threads = 1
+        self.Args.threads = n_cpus
         self.Args.type = 'all'
         self.Args.v = None
         self.Args.suppress_cursor = True
-
         
     def test_kpinfo(self):
         sys.stdout.write("Testing kp-info\n")
@@ -72,7 +72,7 @@ class WidgetTestKeyplayer(unittest.TestCase):
             kp.run()
         the_exception = cm.exception
         self.assertEqual(the_exception.code, 0)
-        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/pyntacle_report_*_KPinfo_*"))[0]
+        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/Pyntacle_Report_*_KP_info_*"))[0]
         with open(fileout, 'r') as fin:
             next(fin)
             data = fin.read()
@@ -95,7 +95,7 @@ class WidgetTestKeyplayer(unittest.TestCase):
             kp.run()
         the_exception = cm.exception
         self.assertEqual(the_exception.code, 0)
-        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/pyntacle_report_*_KP_greedy_*"))[0]
+        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/Pyntacle_Report_*_KP_greedy_*"))[0]
         with open(fileout, 'r') as fin:
             next(fin)
             data = fin.read()
@@ -108,9 +108,9 @@ class WidgetTestKeyplayer(unittest.TestCase):
         print(e)
         self.assertEqual(o,e,
                          'Wrong checksum for KeyPlayer, kp-finder greedy case')
-        
+
     def test_kpfinder_bf(self):
-        sys.stdout.write("Testing kp-finder bruteforce\n")
+        sys.stdout.write("Testing kp-finder bruteforce with {} cpus\n".format(n_cpus))
         self.Args.which = 'kp-finder'
         self.Args.implementation = 'brute-force'
         self.Args.k_size = 2
@@ -120,7 +120,7 @@ class WidgetTestKeyplayer(unittest.TestCase):
             kp.run()
         the_exception = cm.exception
         self.assertEqual(the_exception.code, 0)
-        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/pyntacle_report_*_KP_bruteforce_*"))[0]
+        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/Pyntacle_Report_*_KP_bruteforce_*"))[0]
         with open(fileout, 'r') as fin:
             next(fin)
             data = fin.read()
@@ -139,6 +139,6 @@ class WidgetTestKeyplayer(unittest.TestCase):
         files = glob.glob(os.path.join(current_dir, 'pyntacletests/test_sets/tmp/*'))
         for f in files:
             os.remove(f)
-    #
+
 if __name__ == '__main__':
     unittest.main()

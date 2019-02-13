@@ -207,7 +207,7 @@ Changelog for current and past releases:
 - Added the --repeat option to pyntacle generate, so that the user can decide how many random graphs need to be created in one run.
 - Bugfix in the edgelist importer, when a header is present.
 - Bugfix for edgelist when node names are numbers, and now whitelines are skipped.
-- Communities gracefully exits when no modules are found or all modules are filtered out by the user's custom filters.
+- Communities gracefully exits when no get_modules are found or all get_modules are filtered out by the user's custom filters.
 - Major editing of the main inline help to match the documentation on the website.
 - Added warnings in documentation for Windows users that have whitespaces in the Conda installation folder.
 - Minor bugfixes
@@ -238,3 +238,6 @@ href="http://creativecommons.org/licenses/by-nc-nd/4.0/"><img
 alt="Creative Commons License" style="border-width:0"
 src="https://i.creativecommons.org/l/by-nc-nd/4.0/88x31.png" /></a><br
 />
+
+
+

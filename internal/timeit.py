@@ -1,11 +1,11 @@
-__author__ = "Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
-__copyright__ = "Copyright 2018, The Pyntacle Project"
-__credits__ = ["Ferenc Jordan"]
-__version__ = "0.2.4"
-__maintainer__ = "Daniele Capocefalo"
-__email__ = "d.capocefalo@css-mendel.it"
-__status__ = "Development"
-__date__ = "27 February 2018"
+__author__ = u"Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
+__copyright__ = u"Copyright 2018, The Pyntacle Project"
+__credits__ = [u"Ferenc Jordan"]
+__version__ = u"1.0.0"
+__maintainer__ = u"Daniele Capocefalo"
+__email__ = "bioinformatics@css-mendel.it"
+__status__ = u"Development"
+__date__ = u"26/11/2018"
 __license__ = u"""
   Copyright (C) 2016-2018  Tommaso Mazza <t.mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
@@ -27,11 +27,12 @@ __license__ = u"""
 """   Wrap the usage time, report it"""
 
 from config import *
-import time
+import time, sys
 from functools import wraps
 def timeit(func):
-    """
+    r"""
     Decorator to give the total elapsed time (in seconds) for a given algorithm
+
     :param func: the input function
     :return: the elapsed time the function took to develop its iteration
     """
@@ -42,7 +43,7 @@ def timeit(func):
         result = func(*args, **kwargs)
         te = time.perf_counter()
 
-        print('Elapsed Time: %2.2f sec' % (te - ts))
+        sys.stdout.write(u"Elapsed Time: %2.2f sec\n" % (te - ts))
 
         return result
 

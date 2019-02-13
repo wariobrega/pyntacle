@@ -5,6 +5,7 @@ pyntacle.algorithms package
     :members:
     :undoc-members:
     :show-inheritance: False
+	:exclude-members: pyntacle.algorithm.shortest_path_gpu
 
 Submodules
 ----------

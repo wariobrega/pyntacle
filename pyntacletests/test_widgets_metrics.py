@@ -1,11 +1,11 @@
-__author__ = "Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
-__copyright__ = "Copyright 2018, The Pyntacle Project"
-__credits__ = ["Ferenc Jordan"]
-__version__ = "0.2.4"
-__maintainer__ = "Daniele Capocefalo"
-__email__ = "d.capocefalo@css-mendel.it"
-__status__ = "Development"
-__date__ = "27 February 2018"
+__author__ = u"Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
+__copyright__ = u"Copyright 2018, The Pyntacle Project"
+__credits__ = [u"Ferenc Jordan"]
+__version__ = u"1.0.0"
+__maintainer__ = u"Daniele Capocefalo"
+__email__ = "bioinformatics@css-mendel.it"
+__status__ = u"Development"
+__date__ = u"26/11/2018"
 __license__ = u"""
   Copyright (C) 2016-2018  Tommaso Mazza <t,mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
@@ -33,12 +33,9 @@ current_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pa
 from config import *
 import re
 from cmds.metrics import Metrics as metrics_command
-from tools.misc.graph_load import GraphLoad
-from algorithms.global_topology import GlobalTopology
+from internal.graph_load import GraphLoad
 from algorithms.shortest_path import ShortestPath
 from tools.enums import *
-
-from pyntacletests import getmd5
 
 
 class DummyObj:
@@ -63,6 +60,7 @@ class WidgetTestMetrics(unittest.TestCase):
         self.Args.save_binary = False
         self.Args.v = None
         self.Args.suppress_cursor = True
+        self.Args.nodes = None
 
     def test_global(self):
         sys.stdout.write("Testing global metrics\n")
@@ -72,7 +70,7 @@ class WidgetTestMetrics(unittest.TestCase):
             mt.run()
         the_exception = cm.exception
         self.assertEqual(the_exception.code, 0)
-        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/pyntacle_report_*_Global_*"))[0]
+        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/Pyntacle_Report_*_Global_*"))[0]
         with open(fileout, 'r') as fin:
             next(fin)
             data = fin.read()
@@ -81,27 +79,27 @@ class WidgetTestMetrics(unittest.TestCase):
             data_exp = exp.read()
         o = set(re.findall(r"[-+]?\d*\.\d+|\d+", data))
         e = set(re.findall(r"[-+]?\d*\.\d+|\d+", data_exp))
-        
+
         self.assertEqual(o, e,
                          'Wrong checksum for Metrics, global case')
-        
+
         # CPU, GPU, igraph coherence check
         graph = GraphLoad(self.Args.input_file, "adjm", header=True, separator=self.Args.input_separator).graph_load()
-        
+
         implementation = CmodeEnum.igraph
         igraph_result = round(ShortestPath.average_global_shortest_path_length(graph, implementation), 5)
-        
+
         implementation = CmodeEnum.cpu
         cpu_result = ShortestPath.average_global_shortest_path_length(graph, implementation)
-        
+
         self.assertEqual(igraph_result, cpu_result, 'Discrepancy between igraph and cpu result, global case')
-        
+
         if cuda_avail:
             implementation = CmodeEnum.gpu
             gpu_result = ShortestPath.average_global_shortest_path_length(graph, implementation)
             self.assertEqual(igraph_result, gpu_result,
                              'Discrepancy between igraph and gpu result, global case')
-        
+
     def test_local(self):
         sys.stdout.write("Testing local metrics\n")
         self.Args.damping_factor = 0.85
@@ -114,7 +112,7 @@ class WidgetTestMetrics(unittest.TestCase):
             mt.run()
         the_exception = cm.exception
         self.assertEqual(the_exception.code, 0)
-        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/pyntacle_report_*_Local_*"))[0]
+        fileout = glob.glob(os.path.join(current_dir, "pyntacletests/test_sets/tmp/Pyntacle_Report_*_Local_*"))[0]
         with open(fileout, 'r') as fin:
             next(fin)
             data = fin.read()

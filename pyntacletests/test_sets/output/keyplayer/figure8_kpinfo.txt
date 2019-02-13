@@ -7,7 +7,7 @@ edges	56
 	
 Pyntacle Command:	KPinfo	
 maximum mreach distance	2	
-initial F value (whole graph)	0.0	
+initial F value (whole graph)	0	
 initial dF value (whole graph)	0.64755	
 
 	

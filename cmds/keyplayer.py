@@ -1,11 +1,11 @@
-__author__ = "Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
-__copyright__ = "Copyright 2018, The Pyntacle Project"
-__credits__ = ["Ferenc Jordan"]
-__version__ = "0.2.4"
-__maintainer__ = "Daniele Capocefalo"
-__email__ = "d.capocefalo@css-mendel.it"
-__status__ = "Development"
-__date__ = "27 February 2018"
+__author__ = u"Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
+__copyright__ = u"Copyright 2018, The Pyntacle Project"
+__credits__ = [u"Ferenc Jordan"]
+__version__ = u"1.0.0"
+__maintainer__ = u"Daniele Capocefalo"
+__email__ = "bioinformatics@css-mendel.it"
+__status__ = u"Development"
+__date__ = u"26/11/2018"
 __license__ = u"""
   Copyright (C) 2016-2018  Tommaso Mazza <t.mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
@@ -24,20 +24,29 @@ __license__ = u"""
   work. If not, see http://creativecommons.org/licenses/by-nc-nd/4.0/.
   """
 
-from cmds.cmds_utils.kpsearch_wrapper import KPWrapper as kpw
-from cmds.cmds_utils.kpsearch_wrapper import GOWrapper as gow
-from cmds.cmds_utils.kpsearch_wrapper import BFWrapper as bfw
-from algorithms.keyplayer import KeyPlayer as kpp
+
+from config import *
+from collections import OrderedDict
+from colorama import Fore, Style
 from itertools import chain
-from exceptions.generic_error import Error
+from igraph import Graph
+
+from cmds.cmds_utils.group_search_wrapper import InfoWrapper as kpw
+from cmds.cmds_utils.group_search_wrapper import GOWrapper as gow
+from cmds.cmds_utils.group_search_wrapper import BFWrapper as bfw
+from algorithms.keyplayer import KeyPlayer as kpp
+
+
 from io_stream.exporter import PyntacleExporter
-from cmds.cmds_utils.plotter import *
-from cmds.cmds_utils.reporter import *
-from tools.graph_utils import *
-from tools.misc.graph_load import *
-from tools.enums import ReportEnum, CmodeEnum
+from cmds.cmds_utils.plotter import PlotGraph
+from cmds.cmds_utils.reporter import PyntacleReporter
+from tools.graph_utils import GraphUtils as gu
+from tools.enums import ReportEnum, CmodeEnum, KpnegEnum, KpposEnum
 from tools.add_attributes import AddAttributes
-from colorama import Fore, Style, init
+from internal.graph_load import GraphLoad
+from exceptions.generic_error import Error
+from exceptions.multiple_solutions_error import MultipleSolutionsError
+
 
 
 class KeyPlayer():
@@ -46,228 +55,211 @@ class KeyPlayer():
         self.args = args
         self.date = runtime_date
         # Check for pycairo
-        if not self.args.no_plot and util.find_spec("cairo") is None:
-            sys.stdout.write("WARNING: It seems that the pycairo library is not installed/available. Plots"
-                             "will not be produced.")
+        if not self.args.no_plot and importlib.util.find_spec("cairo") is None:
+            sys.stdout.write(u"Warning: It seems that the pycairo library is not installed/available. Graph plot(s)"
+                             "will not be produced.\n")
             self.args.no_plot = True
 
     def run(self):
+        if not hasattr(self.args, 'which'):
+            raise Error(u"usage: pyntacle.py keyplayer {kp-finder, kp-info} [options]'")
+
         if not self.args.suppress_cursor:
             cursor = CursorAnimation()
             cursor.daemon = True
             cursor.start()
 
         if self.args.m_reach == None and self.args.type in ["pos", "all"]:
-            raise Error("m reach distance must be provided")
+            sys.stderr.write(u"m-reach distance must be provided for computing m-reach. Quitting\n")
+            sys.exit(1)
 
         # Checking input file
         if self.args.input_file is None:
-            self.logging.error(
-                "Please specify an input file using the -i option.".format(self.args.input_file))
-            sys.exit()
+            sys.stderr.write(
+                u"Please specify an input file using the `-i/--input-file` option. Quitting.\n")
+            sys.exit(1)
+
         if not os.path.exists(self.args.input_file):
-            self.logging.error("Cannot find {}. Is the path correct?".format(self.args.input_file))
-            sys.exit()
+            sys.stdout.write(u"Cannot find {}. Is the path correct?\n".format(self.args.input_file))
+            sys.exit(1)
+
         if self.args.no_header:
             header = False
         else:
             header = True
-        # check output directory
 
-        if not os.path.isdir(self.args.directory):
-            sys.stdout.write("Warning: Output directory does not exist, will create one at {}.\n".format(
-                os.path.abspath(self.args.directory)))
-            os.makedirs(os.path.abspath(self.args.directory), exist_ok=True)
-
-        # Parsing optional node list
-        if hasattr(self.args, 'nodes'):
-            self.args.nodes = self.args.nodes.split(',')
-            # self.args.nodes = [str.lower(x) for x in self.args.nodes]
-
-        if not hasattr(self.args, 'which'):
-            raise Error("usage: pyntacle.py keyplayer {kp-finder, kp-info} [options]'")
-
-        self.logging.debug('Running Pyntacle keyplayer, with arguments')
-        self.logging.debug(self.args)
         # Load Graph
-        sys.stdout.write("Reading input file...\n")
+
+        sys.stdout.write(u"Importing graph from file...\n")
         graph = GraphLoad(self.args.input_file, format_dictionary.get(self.args.format, "NA"), header, separator=self.args.input_separator).graph_load()
-        # print(graph.summary())
-        # print(graph.vs()["name"])
-        # for elem in graph.vs():
-        #     print (elem["name"], elem.index, elem.degree())
-        # sys.exit(0)
+        # print (graph["name"])
+        # input()
+        # init graph utils class
+
+        utils = gu(graph=graph)
 
         if hasattr(self.args, 'nodes'):
-            if not all(x in graph.vs["name"] for x in self.args.nodes):
-                raise WrongArgumentError("One or more nodes you supplied could not be found in the input graph.")
-        # init Utils global stuff
-        utils = GraphUtils(graph=graph)
-        
-        if '__implementation' in graph.attributes():
-            implementation = graph['__implementation']
-        else:
-            implementation = CmodeEnum.igraph
-            
+            self.args.nodes = self.args.nodes.split(",")
+
+            if not utils.nodes_in_graph(self.args.nodes):
+                sys.stderr.write(
+                    "One or more of the specified nodes is not present in the graph. Please check your spelling and the presence of empty spaces in between node names. Quitting.\n")
+                sys.exit(1)
+
         if self.args.largest_component:
             try:
                 graph = utils.get_largest_component()
                 sys.stdout.write(
-                    "Taking the largest component of the input graph as you requested ({} nodes, {} edges)\n".format(
+                    u"Taking the largest component of the input graph as you requested ({} nodes, {} edges)...\n".format(
                         graph.vcount(), graph.ecount()))
+                # reinitialize graph utils class
+                utils.set_graph(graph)
 
             except MultipleSolutionsError:
                 sys.stderr.write(
-                    "The graph has two largest components of the same size. Cannot choose one. Please parse your file or remove the \"--largest-component\" option. Quitting\n")
+                    u"The graph has two largest components of the same size. Cannot choose one. Please parse your file or remove the '--largest-component' option. Quitting.\n")
                 sys.exit(1)
 
-        # Check provided dimensions' format
+            if hasattr(self.args, 'nodes'):
+                if not utils.nodes_in_graph(self.args.nodes):
+                    sys.stderr.write(
+                        "One or more of the specified nodes is not present in the largest graph component. Select a different set or remove this option. Quitting.\n")
+                    sys.exit(1)
+
+        if 'implementation' in graph.attributes():
+            implementation = graph['implementation']
+        else:
+            implementation = CmodeEnum.igraph
+
+        # check that output directory is properly set
+        createdir = False
+        if not os.path.isdir(self.args.directory):
+            createdir = True
+
+        # control plot dimensions
         if self.args.plot_dim:  # define custom format
             self.args.plot_dim = self.args.plot_dim.split(",")
-    
+
             for i in range(0, len(self.args.plot_dim)):
                 try:
                     self.args.plot_dim[i] = int(self.args.plot_dim[i])
-        
+
+                    if self.args.plot_dim[i] <= 0:
+                        raise ValueError
+
                 except ValueError:
                     sys.stderr.write(
-                        "Format specified must be a comma separated list of values(e.g. 1920,1080). Quitting\n")
+                        u"Format specified must be a comma-separated list of positive integers (e.g. 1920,1080). Quitting\n")
                     sys.exit(1)
-        
-                if self.args.plot_dim[i] <= 0:
-                    sys.stderr.write(
-                        "Format specified must be a comma separated list of values(e.g. 1920,1080). Quitting\n")
-                    sys.exit(1)
-    
+
             plot_size = tuple(self.args.plot_dim)
 
         else:
-            # generate different formats according to graph size
-            if graph.vcount() <= 150:
-                plot_size = (800, 800)
-    
-            else:
+            plot_size = (800, 600)
+
+            if graph.vcount() > 150:
                 plot_size = (1600, 1600)
-        
-        r = pyntacleReporter(graph=graph)
+
+        #initialize reporter for later usage and plot dimension for later usage
+        r = PyntacleReporter(graph=graph)
+        initial_results = {}
+        results = OrderedDict()
 
         if self.args.which == 'kp-finder':
             k_size = self.args.k_size
-            initial_results = {}
-            results = OrderedDict()
+
             # Greedy optimization
             if self.args.implementation == "greedy":
-                report_type = ReportEnum.KP_greedy.name
+                report_type = ReportEnum.KP_greedy
                 kp_runner = gow(graph=graph)
-                sys.stdout.write("Using Greedy Optimization Algorithm for searching optimal KP-Set\n")
+                sys.stdout.write(u"Using greedy optimization algorithm for searching optimal key player set...\n")
 
                 if self.args.type in (['F', 'neg', 'all']):
                     sys.stdout.write(
-                        "Finding best set of kp-nodes of size {0} using F (kp neg measure)\n".format(
+                        u"KP-NEG: Finding optimal set of nodes of size {0} that maximizes the F index...\n".format(
                             self.args.k_size))
+
                     initial_results[KpnegEnum.F.name] = kpp.F(graph)
-                    kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.F, seed=self.args.seed)
-                    # if initial_results[KpnegEnum.F.name] != 1:
-                    #     kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.F, seed=self.args.seed)
-                    # else:
-                    #     self.logging.warning("Initial value of F is 1. Skipping search.")
-                    #     results[KpnegEnum.F.name] = [[], 1, 1]
+                    kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.F, seed=self.args.seed, cmode=implementation)
                         
                 if self.args.type in (['dF', 'neg', 'all']):
                     sys.stdout.write(
-                        "Finding best set of kp-nodes of size {0} using dF (kp neg measure)\n".format(
+                        u"KP-NEG: Finding optimal set of nodes of size {0} that maximizes the dF index...\n".format(
                             self.args.k_size))
-                    initial_results[KpnegEnum.dF.name] = kpp.dF(graph, implementation=implementation)
-                    kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.dF,
-                                                max_distance=self.args.max_distances, seed=self.args.seed,
-                                                implementation=implementation)
 
-                    # if initial_results[KpnegEnum.dF.name] != 1:
-                    #     kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.dF,
-                    #                                 max_distance=self.args.max_distances, seed=self.args.seed,
-                    #                                 implementation=implementation)
-                    # else:
-                    #     self.logging.warning("Initial value of dF is 1. Skipping search.")
-                    #     results[KpnegEnum.dF.name] = [[], 1, 1]
+                    initial_results[KpnegEnum.dF.name] = kpp.dF(graph, cmode=implementation)
+                    kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.dF,
+                                                max_distance=self.args.max_distance, seed=self.args.seed,
+                                                cmode=implementation)
 
                 if self.args.type in (['dR', 'pos', 'all']):
                     sys.stdout.write(
-                        "Finding best set of kp-nodes of size {} using dR (kp pos measure)\n".format(
+                        u"KP-POS: Finding optimal set of nodes of size {0} that maximizes the dR index...\n".format(
                             self.args.k_size))
                     kp_runner.run_reachability(self.args.k_size, KpposEnum.dR,
-                                               max_distance=self.args.max_distances, seed=self.args.seed,
-                                               implementation = implementation)
+                                               max_distance=self.args.max_distance, seed=self.args.seed,
+                                               cmode=implementation)
 
                 if self.args.type in (['mreach', 'pos', 'all']):
                     sys.stdout.write(
-                        "Finding best set of kp-nodes of size {0} using an MREACH measure of {1} (kp pos measure)\n".format(
+                        u"KP-POS: Finding optimal set of nodes of size {0} that maximizes the nodes reached (m-reach) at a distance {1}...".format(
                             self.args.k_size, self.args.m_reach))
                     kp_runner.run_reachability(self.args.k_size, KpposEnum.mreach, m=self.args.m_reach,
-                                               max_distance=self.args.max_distances, seed=self.args.seed,
-                                               implementation=implementation)
+                                               max_distance=self.args.max_distance, seed=self.args.seed,
+                                               cmode=implementation)
 
             elif self.args.implementation == "brute-force":
-                #TODO: the implementation is overridden to igraph for conflicts with numba
 
-                report_type = ReportEnum.KP_bruteforce.name
+                report_type = ReportEnum.KP_bruteforce
                 kp_runner = bfw(graph=graph)
-                sys.stdout.write("Using Brute Force for searching optimal KP-Set\n")
+                sys.stdout.write(u"Using brute-force search algorithm to find the best key player set(s)...\n")
 
                 if self.args.type in (['F', 'neg', 'all']):
 
                     sys.stdout.write(
-                        "Finding best set of kp-nodes of size {} using F (kp neg measure)\n".format(
+                        u"KP-NEG: Finding best set(s) of nodes of size {0} that hold the higher value of F among their peers...\n".format(
                             self.args.k_size))
                     initial_results[KpnegEnum.F.name] = kpp.F(graph)
                     kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.F, threads=self.args.threads)
-                    # if initial_results[KpnegEnum.F.name] != 1:
-                    #     kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.F, threads=self.args.threads)
-                    #
-                    # else:
-                    #     self.logging.warning("Graph already owns the maximum F value (1.0) Skipping search.")
-                    #     results[KpnegEnum.F.name] = [[None], 1, 1]
+
 
                 if self.args.type in (['dF', 'neg', 'all']):
                     sys.stdout.write(
-                        "Finding best set of kp-nodes of size {} using dF (kp neg measure)\n".format(
+                        u"KP-NEG: Finding best set(s) of nodes of size {0} that hold the higher value of dF among their peers...\n".format(
                             self.args.k_size))
 
-                    initial_results[KpnegEnum.dF.name] = kpp.dF(graph, implementation=CmodeEnum.igraph)
+                    initial_results[KpnegEnum.dF.name] = kpp.dF(graph, cmode=CmodeEnum.igraph)
                     kp_runner.run_fragmentation(self.args.k_size, KpnegEnum.dF,
-                                                    max_distance=self.args.max_distances,
-                                                    implementation=CmodeEnum.igraph, threads=self.args.threads)
-                    # if initial_results[KpnegEnum.dF.name] != 1:
-                    # else:
-                    #     self.logging.warning("Graph already owns the maximum dF value (1.0) Skipping search.")
-                    #     results[KpnegEnum.dF.name] = [[None], 1, 1]
+                                                max_distance=self.args.max_distance,
+                                                cmode=CmodeEnum.igraph, threads=self.args.threads)
 
                 if self.args.type in (['dR', 'pos', 'all']):
                     sys.stdout.write(
-                        "Finding best set of kp-nodes of size {} using dR (kp pos measure)\n".format(
+                        u"KP-POS: Finding best set(s) of nodes of size {0} that hold the higher value of dR among their peers...\n".format(
                             self.args.k_size))
                     kp_runner.run_reachability(self.args.k_size, KpposEnum.dR,
-                                               max_distance=self.args.max_distances,
-                                               implementation=CmodeEnum.igraph, threads=self.args.threads)
+                                               max_distance=self.args.max_distance,
+                                               cmode=CmodeEnum.igraph, threads=self.args.threads)
                     
                 if self.args.type in (['mreach', 'pos', 'all']):
                     sys.stdout.write(
-                        "Finding best set of kp-nodes of size {0} using an MREACH measure of {1} (kp pos measure)\n".format(
+                        u"KP-POS: Finding the best set(s) of nodes of size {0} that maximizes the nodes reached (m-reach) at a distance {1}...".format(
                             self.args.k_size, self.args.m_reach))
 
                     kp_runner.run_reachability(self.args.k_size, KpposEnum.mreach, m=self.args.m_reach,
-                                               max_distance=self.args.max_distances,
-                                               implementation=CmodeEnum.igraph, threads=self.args.threads)
+                                               max_distance=self.args.max_distance,
+                                               cmode=CmodeEnum.igraph, threads=self.args.threads)
 
             else:
-                sys.stdout.write("Implementation Error. Please contact Pyntacle developers and sent this error message, along with a command line and a log.\nQuitting.\n")
+                sys.stdout.write(u"Critical Error. Please contact Pyntacle developers and report this issue, along with your command line. Quitting.\n")
                 sys.exit(1)
 
+            #get report results
             results.update(kp_runner.get_results())
 
-
-            sys.stdout.write(Fore.RED + Style.BRIGHT + "\n### RUN SUMMARY ###\n" + Style.RESET_ALL)
-            sys.stdout.write("kp set size: {}\n".format(self.args.k_size))
-            for kp in results.keys(): #ONE OF THE keys represent the algorithm, so no else exit in here
+            sys.stdout.write(Fore.RED + Style.BRIGHT + u"\n### RUN SUMMARY ###\n" + Style.RESET_ALL)
+            sys.stdout.write(u"node set size for key player search: {}\n".format(str(self.args.k_size)))
+            for kp in results.keys():
 
                 if len(results[kp][0]) > 1 and self.args.implementation == 'brute-force':
                     plurals = ['s', 'are']
@@ -287,14 +279,13 @@ class KeyPlayer():
                     # joining initial results with final ones
                     results[kp].append(initial_results[kp])
 
-                    
                     sys.stdout.write(
-                        'kp set{0} for Key Player Metric {2} {3} ({4}) with value {5} (initial {2} value was {6})\n'.format(
-                            plurals[0], self.args.k_size, kp, plurals[1], ', '.join(list_of_results), results[kp][1], results[kp][2]))
+                        u'Key player set{0} of size {1} for negative key player index {2} {3} ({4}) with value\n{5} (Initial {2} of the graph was {6}).\n'.format(
+                            plurals[0], self.args.k_size, kp, plurals[1], ',\n'.join(list_of_results), results[kp][1], results[kp][2]))
 
                 elif kp == KpposEnum.dR.name:
-                    sys.stdout.write('kp set{0} for Key Player Metric {2} {3} ({4}) with value {5}\n'.format(
-                        plurals[0], self.args.k_size, kp, plurals[1], ', '.join(list_of_results), results[kp][1]))
+                    sys.stdout.write(u'Key player set{0} of size {1} for positive key player index {2} {3} ({4})\nwith value {5}.\n'.format(
+                        plurals[0], self.args.k_size, kp, plurals[1], ',\n'.join(list_of_results), results[kp][1]))
 
                 elif kp == KpposEnum.mreach.name:
                     results[kp].append(self.args.m_reach)
@@ -304,146 +295,129 @@ class KeyPlayer():
                     else:
                         node_perc_reached = round(node_perc_reached, 2)
                     sys.stdout.write(
-                        'With the given distance of {2}, {6} nodes are reached by the kp-set{0} ({5}).\n'
-                        'The total percentage of nodes, which includes the kp-set, is {7}%\n'.format(
-                            plurals[0], self.args.k_size, self.args.m_reach, kp, plurals[1], ', '.join(list_of_results),
+                        u'Key player set{0} of size {1} for positive key player index {2}, using a maximum distance of '
+                        '{3} {4}\n with value {5} (number of nodes reached)\n. The total percentage of nodes, which '
+                        'includes the kp-set, is {7}%.\n'
+                        .format(
+                            plurals[0], self.args.k_size, kp, self.args.m_reach,  plurals[1], ', '.join(list_of_results),
                             results[kp][1], node_perc_reached))
-            
-            sys.stdout.write(Fore.RED + Style.BRIGHT + "### END OF SUMMARY ###\n\n" + Style.RESET_ALL)
+            sys.stdout.write(Fore.RED + Style.BRIGHT + u"### END OF SUMMARY ###\n" + Style.RESET_ALL)
 
-
-            if self.args.implementation == "brute-force":
-                r.create_report(report_type=ReportEnum.KP_bruteforce, report=results)
-            elif self.args.implementation == "greedy":
-                r.create_report(report_type=ReportEnum.KP_greedy, report=results)
+            #prepare report file
+            report_prefix = "_".join(
+                ["pyntacle", self.args.which, graph["name"][0], "kp_size", str(k_size), report_type.name, "report",
+                 self.date])
 
         # kpinfo: compute kpmetrics for a set of predetermined nodes
         elif self.args.which == 'kp-info':
-            report_type = ReportEnum.KPinfo.name
-            k_size = len(self.args.nodes)
-            initial_results = {}
-            kp_runner = kpw(graph=graph)
+            report_type = ReportEnum.KP_info
+            initial_results = OrderedDict()
+            kp_runner = kpw(graph=graph, nodes=self.args.nodes)
             results = OrderedDict()
 
-            sys.stdout.write('\nNodes given as input: ({})\n'.format(', '.join(self.args.nodes)))
+            sys.stdout.write(u"\nNodes given as input: ({})\n".format(', '.join(self.args.nodes)))
             if self.args.type in (['F', 'neg', 'all']):
                 initial_results[KpnegEnum.F.name] = kpp.F(graph)
-                kp_runner.run_KPNeg(self.args.nodes, KpnegEnum.F)
+                kp_runner.run_fragmentation(KpnegEnum.F)
             if self.args.type in (['dF', 'neg', 'all']):
-                initial_results[KpnegEnum.dF.name] = kpp.dF(graph, implementation=implementation)
-                kp_runner.run_KPNeg(self.args.nodes, KpnegEnum.dF, max_distance=self.args.max_distances,
-                                    implementation=implementation)
+                initial_results[KpnegEnum.dF.name] = kpp.dF(graph, cmode=implementation, max_distance=self.args.max_distance)
+                kp_runner.run_fragmentation(KpnegEnum.dF, max_distance=self.args.max_distance,
+                                            cmode=implementation)
 
             if self.args.type in (['dR', 'pos', 'all']):
-                kp_runner.run_KPPos(self.args.nodes, KpposEnum.dR, max_distance=self.args.max_distances,
-                                    implementation=implementation)
+                kp_runner.run_reachability(KpposEnum.dR, max_distance=self.args.max_distance,
+                                           cmode=implementation)
 
             if self.args.type in (['mreach', 'pos', 'all']):
-                kp_runner.run_KPPos(self.args.nodes, KpposEnum.mreach, m=self.args.m_reach,
-                                    max_distance=self.args.max_distances, implementation=implementation)
+                kp_runner.run_reachability(KpposEnum.mreach, m=self.args.m_reach,
+                                           max_distance=self.args.max_distance, cmode=implementation)
 
             results.update(kp_runner.get_results())
-            sys.stdout.write(Fore.RED + Style.BRIGHT + "\n### RUN SUMMARY ###\n" + Style.RESET_ALL)
-            sys.stdout.write("Keyplayer metric(s) {}:\n".format(self.args.type))
+            sys.stdout.write(Fore.RED + Style.BRIGHT + u"\n### RUN SUMMARY ###\n" + Style.RESET_ALL)
             for metric in results.keys():
 
                 if metric == KpnegEnum.F.name or metric == KpnegEnum.dF.name:
                     results[metric].append(initial_results[metric])
                     sys.stdout.write(
-                        "Starting value for {0} is {1}. Removing nodes:\n({2})\ngives a {0} value of {3}\n".format(
+                        u"Initial graph {0} is {1}.\nRemoving node set \n({2})\ngives a {0} value of {3}.\n".format(
                             metric, results[metric][2], ', '.join(self.args.nodes), results[metric][1]))
 
                 elif metric == KpposEnum.mreach.name:
                     results[metric].append(self.args.m_reach)
                     perc_node_reached = round((results[metric][1] + len(self.args.nodes)) / graph.vcount() * 100, 3)
                     sys.stdout.write(
-                        "Nodes:\n({0})\nhave an {1} of {2}. This Means they can reach the {3}% of nodes in {4} steps\n".format(
+                        u"Node set:\n({0})\nhas a {1} of {2}. This means it can reach the {3}% of remaining nodes in the graph nodes in at best {4} steps.\n".format(
                             ', '.join(results[metric][0]), metric, results[metric][1], perc_node_reached,
                             self.args.m_reach))
 
                 else: #dR case
                     sys.stdout.write(
-                        "{0} value for node:\n({1})\nis {2}\n".format(metric, ', '.join(results[metric][0]),
+                        "{0} value for node set:\n({1})\nis {2}\n".format(metric, ', '.join(results[metric][0]),
                                                                   results[metric][1]))
-            r.create_report(report_type=ReportEnum.KPinfo, report=results)
-            sys.stdout.write(Fore.RED + Style.BRIGHT + "### END OF SUMMARY ###\n\n" + Style.RESET_ALL)
+            sys.stdout.write(Fore.RED + Style.BRIGHT + "### END OF SUMMARY ###\n" + Style.RESET_ALL)
+            report_prefix = "_".join(
+                ["pyntacle", self.args.which, graph["name"][0], report_type.name,
+                 "report",
+                 self.date])
 
         else:
             log.critical(
-                "Subcommand Error. Please contact Pyntacle Developers at bioinformatics@css-mendel.it and report this problem, along with the command you tried. Quitting\n.")
+                u"Critical Error. Please contact Pyntacle Developers and report this problem, along with your command line. Quitting\n.")
             sys.exit(1)
 
+        # check output directory
+        if not createdir:
+            sys.stdout.write(u"Warning: output directory does not exist, will create one at {}.\n".format(
+                os.path.abspath(self.args.directory)))
+            os.makedirs(os.path.abspath(self.args.directory), exist_ok=True)
+
         # reporting and plotting part
+        sys.stdout.write(u"Producing report in {} format...\n".format(self.args.report_format))
 
-        sys.stdout.write("Producing report in {} format.\n".format(self.args.report_format))
-        report_prefix = "_".join(
-            ["pyntacle", self.args.which, graph["name"][0], "kpsize", str(k_size), report_type, "report", self.date])
-        report_path = os.path.join(self.args.directory, ".".join([report_prefix, self.args.report_format]))
-
-        if os.path.exists(report_path):
-            self.logging.warning(
-                "A report with the same name ({}) already exists, overwriting it".format
-                (os.path.basename(report_path)))
-
+        r.create_report(report_type=report_type, report=results)
         r.write_report(report_dir=self.args.directory, format=self.args.report_format)
         r.write_json_report(report_dir=self.args.directory, report_dict=results, suffix=graph["name"][0])
 
         if self.args.save_binary:
-            #reproduce octopus behaviour by adding kp information to the graph before saving it
-            sys.stdout.write("Saving graph to a binary pickle file with \'.graph\' extension \n")
-            #step 1: decidee the type of the implementation
+            # reproduce octopus behaviour by adding kp information to the graph before saving it
+            sys.stdout.write(u"Saving graph to a binary file (ending in .graph) in the specified output directory...\n")
 
-            bf = False
-            if self.args.which == "kp-info":
-                bin_type = "kpinfo"
-            else:
-                if self.args.implementation == "brute-force":
-                    bin_type = "bruteforce"
-                    bf = True
+            for key in results.keys():
+                if key == KpposEnum.mreach.name: #replace the mreach distance
+                    new_mreach = "_".join([KpposEnum.mreach.name, str(results[KpposEnum.mreach.name][-1])])
+                    #create new key
+                    results[new_mreach] = results[KpposEnum.mreach.name][:-1] #remove the mreach distance before adding it to the binary file
+                    del results[KpposEnum.mreach.name]
+                    key = new_mreach
+
+                if self.args.which == "kp-finder":
+                    if self.args.implementation == "brute-force":
+                        suffix = "bruteforce"
+                        attr_key = tuple(tuple(sorted(tuple(x))) for x in results[key][0])
+
+                    else:
+                        suffix = "greedy"
+                        attr_key = tuple(sorted(tuple(results[key][0])))
 
                 else:
-                    bin_type = "greedy"
+                    suffix = "info"
+                    attr_key = tuple(sorted(tuple(results[key][0])))
 
-            queried_stuff = results.keys()
-            if KpnegEnum.F.name in queried_stuff:
-                if KpnegEnum.F.name in graph.attributes():
-                    sys.stdout.write("{} already present, will overwrite\n".format(KpnegEnum.F.name))
-                graph[KpnegEnum.F.name] = results[KpnegEnum.F.name][-1] #initial F value
-                k = "_".join([KpnegEnum.F.name, bin_type])
+                attr_name = "_".join([key, suffix])
+                attr_val = results[key][1]
 
-                if bf:
-                    AddAttributes(graph).add_graph_attributes(k, {tuple(tuple(x) for x in results[KpnegEnum.F.name][0]): results[KpnegEnum.F.name][1]})
+                if attr_name in graph.attributes():
+                    if not isinstance(graph[attr_name], dict):
+                        sys.stdout.write("Warning: attribute {} does not point to a dictionary, will overwrite.\n".format(attr_name))
+                        AddAttributes.add_graph_attributes(graph, attr_name, {attr_key: attr_val})
+                    else:
+                        if attr_key in graph[attr_name]:
+                            sys.stdout.write("Warning: {} already present in the {} graph attribute, will overwrite...\n".format(attr_key, attr_val))
+                        graph[attr_name].update({attr_key: attr_val})
                 else:
-                    AddAttributes(graph).add_graph_attributes(k, {tuple(results[KpnegEnum.F.name][0]): results[KpnegEnum.F.name][1]})
+                    AddAttributes.add_graph_attributes(graph, attr_name, {attr_key: attr_val})
 
-            if KpnegEnum.dF.name in queried_stuff:
-                graph[KpnegEnum.dF.name] = results[KpnegEnum.dF.name][-1]  #initial dF value
-                k = "_".join([KpnegEnum.dF.name, bin_type])
-
-                if bf:
-                    AddAttributes(graph).add_graph_attributes(k, {tuple(tuple(x) for x in results[KpnegEnum.dF.name][0]): results[KpnegEnum.dF.name][1]})
-                else:
-                    AddAttributes(graph).add_graph_attributes(k, {tuple(results[KpnegEnum.dF.name][0]):results[KpnegEnum.dF.name][1]})
-
-            if KpposEnum.dR.name in queried_stuff:
-                k = "_".join([KpposEnum.dR.name, bin_type])
-                if bf:
-                    AddAttributes(graph).add_graph_attributes(k, {
-                        tuple(tuple(x) for x in results[KpposEnum.dR.name][0]): results[KpposEnum.dR.name][1]})
-                else:
-                    AddAttributes(graph).add_graph_attributes(k, {tuple(results[KpposEnum.dR.name][0]):results[KpposEnum.dR.name][1]})
-
-            if KpposEnum.mreach.name in queried_stuff:
-                k = "_".join([KpposEnum.mreach.name, str(results[KpposEnum.mreach.name][-1]), bin_type])
-
-                if bf:
-                    AddAttributes(graph).add_graph_attributes(k, {
-                        tuple(tuple(x) for x in results[KpposEnum.mreach.name][0]): results[KpposEnum.mreach.name][1]})
-                else:
-                    AddAttributes(graph).add_graph_attributes(k, {
-                        tuple(results[KpposEnum.mreach.name][0]): results[KpposEnum.mreach.name][1]})
-            binary_prefix = "_".join(["pyntacle", graph["name"][0], "kpsize", str(k_size),
-                                      report_type, self.date])
+            binary_prefix = "_".join([os.path.splitext(os.path.basename(self.args.input_file))[0], self.args.which, self.date])
             binary_path = os.path.join(self.args.directory, binary_prefix + ".graph")
             PyntacleExporter.Binary(graph, binary_path)
 
@@ -518,14 +492,13 @@ class KeyPlayer():
                     node_colors = [mreach_nodes_colour if x["name"] in results[metric][0] else other_nodes_colour for x in graph.vs()]
                     node_frames = [mreach_frames_colour if x["name"] in results[metric][0] else other_frame_colour for x in graph.vs()]
 
-
                     plot_graph.set_node_colors(colors=node_colors)
 
 
                     # node_shapes = ["triangle-up" if x["name"] in results[metric][1] else other_nodes_shape for x in graph.vs()]
                     # plot_graph.set_node_shapes(shapes=node_shapes)
 
-                elif metric == "dR":
+                else: #dR
                     dr_nodes_colour = pal[3]
                     dr_frames_colour = framepal[3]
 
@@ -544,10 +517,6 @@ class KeyPlayer():
                     #
                     # plot_graph.set_node_shapes(shapes=node_shapes)
 
-                else:
-                    self.logging.critical(
-                        "This should not happen. Please contact pyntacle developer and send a command line, along with a log. Quitting\n")
-                    sys.exit(1)
 
                 node_sizes = [35 if x["name"] in results[metric][0] else other_nodes_size for x in graph.vs()]
 
@@ -565,12 +534,12 @@ class KeyPlayer():
                     if self.args.m_reach > 5:
                         edge_widths = [5 if any(y in results[metric][0] for y in x["adjacent_nodes"])
                                        else other_edge_width for x in graph.es()]
-                        sys.stdout.write("WARNING - you chose a very high value of m-reach, the edge width "
-                                         "may be too big, hence it will not be represented dynamically.\n")
+                        sys.stdout.write(u"Warning: you chose a very high value of m-reach, the edge width "
+                                         "may be too big, hence it may not be represented correctly.\n")
                     else:
                         mreach_nodes = results[metric][0]
                         # get node indices of corresponding kpset
-                        indices = GraphUtils(graph=graph).get_node_indices(mreach_nodes)
+                        indices = utils.get_node_indices(mreach_nodes)
     
                         edge_widths = [other_edge_width] * graph.ecount()  # define a starting list of values
     
@@ -615,19 +584,20 @@ class KeyPlayer():
 
                 plot_graph.set_layouts(self.args.plot_layout)
 
-                plot_path = os.path.join(plot_dir, "_".join(["keyplayer", graph["name"][0], "report", metric, self.date]) + "." + plot_format)
+                plot_path = os.path.join(plot_dir, "_".join([self.args.which, ["name"][0], metric, self.date]) + "." + plot_format)
                 if os.path.exists(plot_path):
                     sys.stdout.write(
-                        "WARNING - A plot with the name ({}) already exists, overwriting it\n".format(
+                        u"Warning: a plot with the name ({}) already exists, overwriting it.\n".format(
                             os.path.basename(plot_path)))
 
                 plot_graph.plot_graph(path=plot_path, bbox=plot_size, margin=20, edge_curved=0.2,
                                       keep_aspect_ratio=True, vertex_label_size=6, vertex_frame_color=node_frames)
 
         elif graph.vcount() >= 1000:
-            sys.stdout.write("The graph has too many nodes ({}). It will not be drawn\n".format(graph.vcount()))
+            sys.stdout.write(u"The graph has too many nodes ({}, we plot nodes with a maximum of 1000 nodes). It will not be drawn.\n".format(graph.vcount()))
+
         if not self.args.suppress_cursor:
             cursor.stop()
 
-        sys.stdout.write("Pyntacle key-player completed successfully.\n")
+        sys.stdout.write(u"Pyntacle keyplayer completed successfully. Ending.\n")
         sys.exit(0)

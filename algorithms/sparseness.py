@@ -1,19 +1,11 @@
-"""
-Measure the global sparseness of graphs.
-Read the section "TOOLS FOR ESTIMATING THE DIVISIBILITY OF NETWORKS" of the paper entitled "Estimating the
-divisibility of complex biological networks by sparseness indices" available at
-https://doi.org/10.1093/bib/bbp060 for a quick overview
-"""
-
-
-__author__ = "Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
-__copyright__ = "Copyright 2018, The Pyntacle Project"
-__credits__ = ["Ferenc Jordan"]
-__version__ = "0.2.4"
-__maintainer__ = "Daniele Capocefalo"
-__email__ = "d.capocefalo@css-mendel.it"
-__status__ = "Development"
-__date__ = "13/04/2018"
+__author__ = u"Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
+__copyright__ = u"Copyright 2018, The Pyntacle Project"
+__credits__ = [u"Ferenc Jordan"]
+__version__ = u"1.0.0"
+__maintainer__ = u"Daniele Capocefalo"
+__email__ = "bioinformatics@css-mendel.it"
+__status__ = u"Development"
+__date__ = u"26/11/2018"
 __license__ = u"""
   Copyright (C) 2016-2018  Tommaso Mazza <t.mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
@@ -34,20 +26,29 @@ __license__ = u"""
 
 
 import math
-from tools.misc.graph_routines import *
-
+from internal.graph_routines import check_graph_consistency
 
 class Sparseness:
+    r"""
+    A set of metrics to measure the global *sparseness* of graphs.
+    Read the section *Tools for estimating the divisibility of networks* of the paper entitled  `Estimating the
+    divisibility of complex biological networks by sparseness indices <https://doi.org/10.1093/bib/bbp060>`_
+    for a quick overview of sparseness, its relevance in network analysis and the different strategies
+    that are used to estimate it.
+    """
+
     @staticmethod
     @check_graph_consistency
     def completeness_naive(graph) -> float:
-        """
-        Compute the naive version of the completeness index, as described by Mazza *et al.* [Ref]_.
-        They define completeness as the the ratio between the number of non-zero *E* and zero *V* entries in the
+        r"""
+        Compute the first, naive version of the *completeness* index as conceived by
+        `Mazza et al. <https://doi.org/10.1093/bib/bbp060>`_. In this formulation, completeness is defined as
+        the ratio between the number of non-zero (:math:`E`) and zero :math:`V` entries in the
         adjacency matrix of a graph.
-        [Ref] https://doi.org/10.1093/bib/bbp060
-        :param igraph.Graph graph: an igraph.Graph object.
-        :return: The naive computation of the completeness index
+
+        :param igraph.Graph graph: a :class:`igraph.Graph` object. The graph must satisfy a series of requirements, described in the `Minimum requirements specifications <http://pyntacle.css-mendel.it/requirements.html>`_ section of the Pyntacle official page.
+
+        :return float: The naive computation of the completeness index
         """
 
         # total number of non-zero elements (E)
@@ -74,17 +75,20 @@ class Sparseness:
     @staticmethod
     @check_graph_consistency
     def completeness(graph) -> float:
-        """
-        This is a rigorous refinement of the completeness index published in [Ref1]_. It can be applied to matrix
-        not necessarily squared and is calculated as:
-        *rho = (SQRT(k) -1) * (k/z -1)*, where *k = m*n*, *m* = number of rows, *n* = number of columns and
-        *z* = number of zero elements of a matrix.
-        We refer to the paper entitled "Estimating the global density of graphs by a sparseness index" [Ref2]_
-        for details
-        [Ref1] https://doi.org/10.1093/bib/bbp060
-        [Ref2] https://doi.org/10.1016/j.amc.2013.08.040
-        :param igraph.Graph graph: an igraph.Graph object.
-        :return: The completeness index
+        r"""
+        A rigorous refinement of the *completeness* index published in `Mazza et al. <https://doi.org/10.1093/bib/bbp060>`_.
+        It can be applied to matrix not necessarily squared and is calculated as:
+
+        |br| :math:`\rho=\sqrt{k -1}  \cdot \frac{k}{z -1}`
+        |br| where :math:`k = m \cdot n` , :math:`m` is the number of rows, :math:`n` is the number of columns and
+        :math:`z` is the number of zero elements of the graph adjacency matrix.
+
+        |br| We refer to the paper entitled `Estimating the global density of graphs by a sparseness index <https://doi.org/10.1016/j.amc.2013.08.040>`_
+        for more details on the boundaries of this index.
+
+        :param igraph.Graph graph: a :class:`igraph.Graph` object. The graph must satisfy a series of requirements, described in the `Minimum requirements specifications <http://pyntacle.css-mendel.it/requirements.html>`_ section of the Pyntacle official page.
+
+        :return float : The completeness index
         """
 
         node_tot = graph.vcount()
@@ -107,41 +111,20 @@ class Sparseness:
 
     @staticmethod
     @check_graph_consistency
-    def compactness(graph) -> float:
-        """
-        It computes the *compactness* index described by Randić and DeAlba [Ref]_ as:
-        (Undirected graphs) rho = ((n^2 / 2E) -1) * (1- 1/n)
-        (Directed graphs) rho = ((n^2 / E) -1) * (1- 1/n), where n is the number of nodes of the graph and
-        E is the total number of edges.
-        [Ref]https://pubs.acs.org/doi/abs/10.1021/ci970241z?journalCode=jcics1
-        :param igraph.Graph graph: an igraph.Graph object.
-        :return: The compactness index
-        """
+    def compactness(graph, correct: bool = False) -> float:
+        r"""
+        It computes the *compactness* index described by `Randić and DeAlba <https://pubs.acs.org/doi/abs/10.1021/ci970241z?journalCode=jcics1>`_
+        as:
+        |br| :math:`rho = \frac{N^2}{2E} -1 \cdot 1-\frac{1}{N}` for undirected graphs and
+        |br|
+        |br| :math:`rho = \frac{N^2}{E} -1 \cdot 1-\frac{1}{N}` for directed networks,
+        |br| where :math:`N` is the number of nodes of the graph and :math:`E` is the total number of edges.
+        **note** add correct formulation
 
-        if graph.is_directed():
-            e = graph.ecount()
-        else:
-            e = graph.ecount() * 2
+        :param igraph.Graph graph: a :class:`igraph.Graph` object. The graph must satisfy a series of requirements, described in the `Minimum requirements specifications <http://pyntacle.css-mendel.it/requirements.html>`_ section of the Pyntacle official page
+        :param bool: correct whether to use the original implementation by Randić and deAlba or a *correct* version, in which the the inverse  of the number of nodes over all possible edges is used
 
-        node_tot = graph.vcount()
-        addend_left = (math.pow(node_tot, 2) / e) - 1
-        addend_right = 1 - (1 / node_tot)
-        compactness = addend_left * addend_right
-
-        return round(compactness, 5)
-
-    @staticmethod
-    @check_graph_consistency
-    def compactness_correct(graph) -> float:
-        """
-        It computes the correct formulation of the Randić and DeAlba's *compactness* index [Ref1]_ as:
-        (Undirected graphs) rho = ((n^2 / 2E) -1)^-1 * (1- 1/n)^-1
-        (Directed graphs) rho = ((n^2 / E)^ -1)^-1 * (1- 1/n)^-1, where n is the number of nodes of the graph and
-        E is the total number of edges, as for [Ref2]_
-        [Ref1]https://pubs.acs.org/doi/abs/10.1021/ci970241z?journalCode=jcics1
-        [Ref2] https://doi.org/10.1093/bib/bbp060
-        :param igraph.Graph graph: an igraph.Graph object.
-        :return: The corrected compactness index
+        :return float: The compactness index
         """
 
         if graph.is_directed():
@@ -152,6 +135,9 @@ class Sparseness:
         node_tot = graph.vcount()
         addend_left = (math.pow(node_tot, 2) / e) - 1
         addend_right = 1 - (1 / node_tot)
-        compactness = math.pow(addend_left, -1) * math.pow(addend_right, -1)
+        if correct:
+            compactness = math.pow(addend_left, -1) * math.pow(addend_right, -1)
+        else:
+            compactness = addend_left * addend_right
 
         return round(compactness, 5)

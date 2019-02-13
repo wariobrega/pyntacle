@@ -1,11 +1,11 @@
-__author__ = "Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
-__copyright__ = "Copyright 2018, The Pyntacle Project"
-__credits__ = ["Ferenc Jordan"]
-__version__ = "0.2.4"
-__maintainer__ = "Daniele Capocefalo"
-__email__ = "d.capocefalo@css-mendel.it"
-__status__ = "Development"
-__date__ = "27 February 2018"
+__author__ = u"Daniele Capocefalo, Mauro Truglio, Tommaso Mazza"
+__copyright__ = u"Copyright 2018, The Pyntacle Project"
+__credits__ = [u"Ferenc Jordan"]
+__version__ = u"1.0.0"
+__maintainer__ = u"Daniele Capocefalo"
+__email__ = "bioinformatics@css-mendel.it"
+__status__ = u"Development"
+__date__ = u"26/11/2018"
 __license__ = u"""
   Copyright (C) 2016-2018  Tommaso Mazza <t,mazza@css-mendel.it>
   Viale Regina Margherita 261, 00198 Rome, Italy
@@ -53,7 +53,6 @@ class WidgetTestGenerator(unittest.TestCase):
         self.Args.v = None
         self.Args.suppress_cursor = True
 
-
     def test_random(self):
         sys.stdout.write("Testing random generator\n")
         self.Args.which = 'random'
@@ -68,7 +67,7 @@ class WidgetTestGenerator(unittest.TestCase):
         self.assertEqual(the_exception.code, 0)
         fileout = os.path.join(current_dir, 'pyntacletests/test_sets/tmp/random.adjm')
         expected = os.path.join(current_dir, 'pyntacletests/test_sets/output/generate/random/random.adjm')
-        self.assertEqual(getmd5(fileout), getmd5(expected), 'Wrong checksum for Generator, random case')
+        self.assertEqual(getmd5(fileout), getmd5(expected), 'Wrong checksum for PyntacleGenerator, random case')
 
     def test_scalefree(self):
         sys.stdout.write("Testing scale-free generator\n")
@@ -84,7 +83,7 @@ class WidgetTestGenerator(unittest.TestCase):
         self.assertEqual(the_exception.code, 0)
         fileout = os.path.join(current_dir, 'pyntacletests/test_sets/tmp/scalefree.adjm')
         expected = os.path.join(current_dir, 'pyntacletests/test_sets/output/generate/scalefree/scalefree.adjm')
-        self.assertEqual(getmd5(fileout), getmd5(expected), 'Wrong checksum for Generator, scale-free case')
+        self.assertEqual(getmd5(fileout), getmd5(expected), 'Wrong checksum for PyntacleGenerator, scale-free case')
 
     def test_tree(self):
         sys.stdout.write("Testing tree generator\n")
@@ -101,7 +100,7 @@ class WidgetTestGenerator(unittest.TestCase):
         fileout = os.path.join(current_dir, 'pyntacletests/test_sets/tmp/tree.adjm')
         expected = os.path.join(current_dir, 'pyntacletests/test_sets/output/generate/tree/tree.adjm')
         self.assertEqual(getmd5(fileout), getmd5(expected),
-                         'Wrong checksum for Generator, tree case')
+                         'Wrong checksum for PyntacleGenerator, tree case')
 
     def test_smallworld(self):
         sys.stdout.write("Testing smallworld generator\n")
@@ -121,7 +120,7 @@ class WidgetTestGenerator(unittest.TestCase):
         fileout = os.path.join(current_dir, 'pyntacletests/test_sets/tmp/smallworld.adjm')
         expected = os.path.join(current_dir, 'pyntacletests/test_sets/output/generate/smallworld/smallworld.adjm')
         self.assertEqual(getmd5(fileout), getmd5(expected),
-                         'Wrong checksum for Generator, smallworld case')
+                         'Wrong checksum for PyntacleGenerator, smallworld case')
         
     def tearDown(self):
         self.cleanup()
