@@ -28,6 +28,7 @@ html_template = u"""
 
 
 
+
 <!doctype html>
 
 <html lang="en">
@@ -97,12 +98,17 @@ html_template = u"""
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.parsers.gexf/sigma.parsers.gexf.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.filter/sigma.plugins.filter.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.exporters.image/sigma.exporters.image.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.exporters.svg/sigma.exporters.svg.js"></script>
+
 <script src="http://pyntacle.css-mendel.it/js/viewer/jquery.1.11.min.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/viewer/jquery-ui.min.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/viewer/bootstrap.min.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/viewer/draggablePanel/lobipanel.min.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/viewer/jscolor.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/viewer/palette.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+
 
 <script>
   function hexc(colorval) {
@@ -170,18 +176,25 @@ $(function(){
     expand: false,
     unpin: false,
     minWidth: 260,
-    minHeight: 195,
+    minHeight: 235,
     maxWidth: 260,
-    maxHeight: 195,
+    maxHeight: 235,
     resize: "both"
   });
 
-  var positions = [200, 320, 440];
+  var positions = [200, 320, 440, 560];
   if ($('#Key-player-results-pane').is(':visible')){
       var instancekp = $('#Key-player-results-pane').data('lobiPanel');
       instancekp.unpin();
       instancekp.setPosition(10, positions.shift());
       instancekp.enableResize();
+  }
+
+  if ($('#Group-centrality-results-pane').is(':visible')){
+      var instancegc = $('#Group-centrality-results-pane').data('lobiPanel');
+      instancegc.unpin();
+      instancegc.setPosition(10, positions.shift());
+      instancegc.enableResize();
   }
 
   if ($('#Communities-results-pane').is(':visible')){
@@ -200,11 +213,16 @@ $(function(){
 
   var instancecontrols = $('#control-pane').data('lobiPanel');
   instancecontrols.unpin();
-  instancecontrols.setPosition('right', 280)
+  instancecontrols.setPosition('right', 200)
 
   var instancelayouts = $('#layouts-pane').data('lobiPanel');
   instancelayouts.unpin();
-  instancelayouts.setPosition('right', 640)
+  instancelayouts.setPosition('right', 560)
+
+  var instancesolutionsgc = $('#Group-centrality-solutions-pane').data('lobiPanel');
+  instancesolutionsgc.unpin();
+  instancesolutionsgc.setPosition(instancegc.getPosition().x+430, instancegc.getPosition().y);
+  instancesolutionsgc.enableResize();
 
   var instancesolutionscom = $('#Communities-solutions-pane').data('lobiPanel');
   instancesolutionscom.unpin();
@@ -297,7 +315,9 @@ $(function(){
 </script>
 
 <script>
-  var nicenames = {'mreach':"m-reach"}
+  var nicenames = {"mreach":"m-reach", "group_closeness_minimum": "closeness (min)",
+                   "group_closeness_mean": "closeness (mean)",
+                   "group_closeness_maximum": "closeness (max)" }
   function popUp(arg,dict){
     console.log(arg)
     console.log(dict)
@@ -307,7 +327,7 @@ $(function(){
     document.getElementById(arg+"-solcol").innerHTML = '<div id="'+arg+'-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">\\
         <div class="panel-heading">\\
             <div class="panel-title">\\
-                <h2 class="underline">'+arg.toLowerCase()+' solutions</h2>\\
+                <h2 class="underline">'+arg.replace('-',' ').toLowerCase()+' solutions</h2>\\
             </div>\\
         </div>\\
         <div id="'+arg+'-solutions-body" class="panel-body">\\
@@ -319,9 +339,9 @@ $(function(){
      editTitle: false,
      expand: false,
      // unpin: false,
-     minWidth: 350,
+     minWidth: 400,
      minHeight: 315,
-     maxWidth: 350,
+     maxWidth: 400,
      maxHeight: 315,
      resize: "both",
    });
@@ -339,13 +359,15 @@ $(function(){
     $('#'+arg+'-solutions-pane').show();
     $('#'+arg+'-solutions-body').empty()
     $('#'+arg+'-solutions-body').html("<table id='"+arg+"-table' class='table-striped solutionstable'></table>")
+
     for(key in dict){
       $('#'+arg+'-table').append('<tr id="'+key+'-row">')
       if(key in nicenames){
         label = nicenames[key]
       }else{
-        label = key
+        label = key.replace('group_','').replace('_',' ')
       }
+
       $('#'+key+'-row').append('<td class="metric keycell">'+label+':</td>');
       console.log(dict[key]);
       console.log("SPLIT:");
@@ -392,13 +414,13 @@ $(function(){
           }
 
           #control-pane {
-            top: 10px;
+            /* top: 10px; */
             /*bottom: 10px;*/
             right: 10px;
             position: absolute;
             width: 230px;
             /* background-color: rgb(249, 247, 237); */
-            box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3);
+            /* box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3); */
           }
           #control-pane > div {
             /* margin: 10px; */
@@ -415,7 +437,15 @@ $(function(){
             position: absolute;
             width: 230px;
             /* background-color: rgb(249, 247, 237); */
-            box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3);
+            /* box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3); */
+          }
+
+          #layouts-pane, .panel-minimized{
+            position: unset;
+          }
+
+          #control-pane, .panel-minimized{
+            position: unset;
           }
 
           #results-pane{
@@ -586,10 +616,20 @@ $(function(){
             border-left-width: 0;
           }
 
-	  .sigma-tooltip > .sigma-tooltip-body > table > tbody > tr > td {
-	    padding-left: 10px;
-	    word-break: break-word;
-	  }
+    	  .sigma-tooltip > .sigma-tooltip-body > table > tbody > tr > td {
+    	    padding-left: 10px;
+    	    word-break: break-word;
+    	  }
+
+        .swal2-container{
+          z-index:99999999;
+        }
+
+        .alertmodal{
+          border: 2px solid #ceead9;
+        }
+
+
         </style>
 
         <!-- A placeholder for the graph -->
@@ -683,6 +723,10 @@ $(function(){
                         <label class="radio-inline" data-toggle="tooltip" data-placement="top" title="For large graphs, plotting could be slow"><input type="radio" name="optradio" id="radio-frucht">Fruchterman-Reingold</label>
                         <img src="https://img.icons8.com/color/26/000000/error.png" data-toggle="tooltip" data-placement="top" style="width: 18px;" title="For large graphs, plotting could be slow">
                       </div>
+                <div style="margin-top:20px">
+                  <button id="export-svg" type="export">Export SVG</button>
+                  <button id="export-png" type="export">Screen Shot</button>
+
 
                 </div>
         </div>
@@ -703,6 +747,21 @@ $(function(){
               </div>
         </div>
 
+        <div class="row" style="width: fit-content;">
+              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
+                    <div id="Group-centrality-results-pane" class="panel panel-default resultspanel" style="display:hidden !important">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <h2 class="underline">group centrality search</h2>
+                            </div>
+                        </div>
+                        <div id="Group-centrality-results-space" class="panel-body">
+                        </div>
+                    </div>
+              </div>
+              <div class="col-sm-6" id="Group-centrality-solcol" style="width:450px; margin-left: 30px;">
+              </div>
+        </div>
 
         <div class="row"  style="width: fit-content;">
               <div class="col-sm-6" style="width:450px; margin-left: 30px;">
@@ -721,6 +780,8 @@ $(function(){
               </div>
 
         </div>
+
+
 
 
         <div class="row"  style="width: fit-content;">
@@ -771,7 +832,7 @@ $(function(){
               console.log(node)
               console.log(node.attributes)
               for(n in node.attributes){
-                  if(n.startsWith("__") == false){
+                  if(n.startsWith("__") == false && n != 'parent'){
                     console.log("attributo "+n+ " = "+ node.attributes[n])
                     template+="<tr><th>"+n+"</th> <td>"+node.attributes[n]+"</td></tr>"
                   }
@@ -854,23 +915,23 @@ $(function(){
 
         function applyRandom() {
 
-            nodes = s.graph.nodes(),
-            len = nodes.length;
-            for (var i = 0; i < len; i++) {
-                nodes[i].x = Math.random();
-                nodes[i].y = Math.random();
-                // nodes[i].color = nodes[i].center ? '#333' : '#666';
-            }
-            sigma.misc.animation.camera(
-              s.camera,
-              {
-                x: 0,
-                y: 0,
-                ratio: 0.15
-              },
-              {duration: 200}
-            );
-            s.refresh();
+              nodes = s.graph.nodes(),
+              len = nodes.length;
+              for (var i = 0; i < len; i++) {
+                  nodes[i].x = Math.random()*50;
+                  nodes[i].y = Math.random()*50;
+                  // nodes[i].color = nodes[i].center ? '#333' : '#666';
+              }
+              sigma.misc.animation.camera(
+                s.camera,
+                {
+                  x: 0,
+                  y: 0,
+                  ratio: 1
+                },
+                {duration: 200}
+              );
+              s.refresh();
         }
 
         function applyFrucht(){
@@ -902,20 +963,19 @@ $(function(){
             {
               x: 0,
               y: 0,
-              ratio: 0.15
+              ratio: 1
             },
             {duration: 200}
           );
           s.graph.nodes().forEach(function(node, i, a) {
-          node.x = Math.cos(Math.PI * 2 * i / a.length);
-          node.y = Math.sin(Math.PI * 2 * i / a.length);
+          node.x = Math.cos(Math.PI * 2 * i / a.length)*10;
+          node.y = Math.sin(Math.PI * 2 * i / a.length)*10;
           });
 
           //Call refresh to render the new graph
           s.refresh();
         }
 
-        applyRandom();
         // s.refresh();
 
 
@@ -1006,7 +1066,7 @@ $(function(){
               // console.log("Nodo "+n.id+" Degree: "+graph.degree(n.id))
               console.log(n.attributes);
               for(var a in n.attributes){
-                if(!a.startsWith("__") && a!='name'){
+                if(!a.startsWith("__") && a!='name' && a!='parent'){
                   console.log(n.attributes[a]);
                   console.log("is numeric? "+ is_numeric(n.attributes[a]));
                   var isnumeric = is_numeric(n.attributes[a]);
@@ -1024,8 +1084,26 @@ $(function(){
 
             arrayattr = new Set(arrayattr);
             if(arrayattr.size>=1 && arrayattr!= undefined){
-              console.log("EHEHFBEJBFWEQIBFWQIKEBFWEIKBFWEIUFBHEIU")
-              alert("The following attributes have lists as value, and they will not be plotted:\\n- "+Array.from(arrayattr).join('\\n- '))
+              attrlist = "<div style='font-size: 14px;'><ul>"
+              arrayattr.forEach(function(u){
+                attrlist+='<li style="text-align:left">'+u+'</li>';
+                console.log("ATTRRR");
+              });
+
+              attrlist+='</ul></div>'
+              Swal.fire({
+                title: "<span style='font-size:23px;'>unavailable attributes</span>",
+                html: "<span style='font-size: 14px;'>Looks like the following attribute(s) have lists as values, and they will not be plotted:</span><br /><br />"+attrlist,
+                type: 'warning',
+                position: 'center',
+                width: '420px',
+                padding: '20px',
+                customClass: 'alertmodal',
+                animation: 'true'
+
+              }
+              )
+              // alert("The following attributes have lists as value, and they will not be plotted:\\n- "+Array.from(arrayattr).join('\\n- '))
             }
             console.log("ARRAYATTR")
             console.log(arrayattr)
@@ -1533,13 +1611,18 @@ $(function(){
         if (document.getElementById('Key-player-results-pane') !== null){
           $('#Key-player-results-pane').hide();
           $('#Key-player-solutions-pane').hide();
-
         }
+
+        if (document.getElementById('Group-centrality-results-pane') !== null){
+          $('#Group-centrality-results-pane').hide();
+          $('#KGroup-centrality-solutions-pane').hide();
+        }
+
         if (document.getElementById('Communities-results-pane') !== null){
           $('#Communities-results-pane').hide();
           $('#Communities-solutions-pane').hide();
-
         }
+
         if (document.getElementById('Set-results-pane') !== null){
           $('#Set-results-pane').hide();
           $('#Set-solutions-pane').hide();
@@ -1613,9 +1696,41 @@ $(function(){
             }
         }
 
-        s.refresh()
+
+        document.getElementById('export-svg').onclick = function() {
+          console.log('exporting...');
+          var output = s.toSVG({download: true, filename: 'mygraph.svg', width: 1920, height:1080, labels: true,});
+          // console.log(output);
+        };
+
+
+        function generateImage(mouse, clip) {
+          console.log(mouse)
+          console.log(clip)
+          var size = 0;
+          var color = "#FFFFFF";
+          console.log(size);
+          console.log(color);
+          console.log(s.renderers)
+          sigma.plugins.image(s, s.renderers[0], {
+            download: true,
+            size: size,
+            margin: 50,
+            background: color,
+            clip: clip,
+            zoomRatio: 1,
+            labels: true
+          });
+        }
+
+      _.$('export-png').addEventListener("click", function(event) {
+  generateImage(event, true)
+});
+      s.refresh()
+      applyRandom();
+
   </script>
-  <div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
+  <!-- <div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -1633,7 +1748,7 @@ $(function(){
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
 </body>
 
@@ -1645,6 +1760,8 @@ $(function(){
 
 
 css_template = u"""
+
+
 
 
 
@@ -1784,8 +1901,8 @@ button {
 
 .btn-secondary {
     color: #fff;
-    background-color: #2d618e;
-    border-color: #2d618e;
+    background-color: #466279;
+    border-color: #466279;
   }
 
 .btn-secondary:hover, .btn-secondary:active, .btn-secondary.active, .open > .dropdown-toggle.btn-secondary {
@@ -1799,6 +1916,12 @@ button {
   background-color: #2d618e;
   border-color: #2d618e;
 
+}
+
+.btn-success {
+    color: #fff;
+    background-color: #588c58;
+    border-color: #4cae4c;
 }
 
 
@@ -1817,7 +1940,7 @@ select option {
 
   .lobipanel-minimized-toolbar{
     background: none;
-    height: 45px;
+   /*height: 45px;*/
   }
 
 .solution{
@@ -1830,7 +1953,7 @@ select option {
     width: -webkit-fill-available;
 }
 .keycell{
-    width:23%; 
+    width:37%; 
     padding: 5px;
     vertical-align: top;
     font-weight: bold;
