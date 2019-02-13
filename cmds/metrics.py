@@ -37,7 +37,6 @@ from tools.graph_utils import GraphUtils as gu
 from tools.add_attributes import AddAttributes
 from tools.enums import *
 from internal.graph_load import GraphLoad,separator_detect
-from exceptions.missing_attribute_error import MissingAttributeError
 from exceptions.generic_error import Error
 from exceptions.multiple_solutions_error import MultipleSolutionsError
 
