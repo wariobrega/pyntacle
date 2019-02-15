@@ -319,29 +319,31 @@ class Communities():
 
         output_basename = os.path.join(self.args.directory, self.args.output_file)
         # output generated networks
+
+        sys.stdout.write("Writing resulting communities to the specified network file format...\n")
+
         for elem in final_mods:
             output_path = ".".join(["_".join([output_basename, str(elem["module"]), self.date]), out_form])
-            if out_form == "adjm":
-                sys.stdout.write(u"Writing each community to an adjacency matrix...\n")
-                PyntacleExporter.AdjacencyMatrix(elem, output_path, sep=self.args.output_separator,
-                                                 header=output_header)
-            elif out_form == "egl":
-                sys.stdout.write(u"Writing each community to an edge list...\n")
-                PyntacleExporter.EdgeList(elem, output_path, sep=self.args.output_separator, header=output_header)
+            try:
+                if out_form == "adjm":
+                    PyntacleExporter.AdjacencyMatrix(elem, output_path, sep=self.args.output_separator,
+                                                     header=output_header)
+                elif out_form == "egl":
+                    PyntacleExporter.EdgeList(elem, output_path, sep=self.args.output_separator, header=output_header)
 
-            elif out_form == "sif":
-                sys.stdout.write(u"Writing each community to a Simple Interaction Format (SIF) file...\n")
-                PyntacleExporter.Sif(elem, output_path, sep=self.args.output_separator, header=output_header)
+                elif out_form == "sif":
+                    PyntacleExporter.Sif(elem, output_path, sep=self.args.output_separator, header=output_header)
 
-            elif out_form == "dot":
-                sys.stdout.write(u"Writing each community to a DOT file...\n")
-                # Ignore ugly RuntimeWarnings while creating a dot
-                simplefilter("ignore", RuntimeWarning)
-                PyntacleExporter.Dot(elem, output_path)
+                elif out_form == "dot":
+                    # Ignore ugly RuntimeWarnings while creating a dot
+                    simplefilter("ignore", RuntimeWarning)
+                    PyntacleExporter.Dot(elem, output_path)
 
-            elif out_form == "bin":
-                sys.stdout.write(u"Writing each community to a binary file (ending in .graph)...\n")
-                PyntacleExporter.Binary(elem, output_path)
+                elif out_form == "bin":
+                    PyntacleExporter.Binary(elem, output_path)
+
+            except UnsupportedGraphError:
+                sys.stdout.write("Module {0} was skipped because it is too small ({1} nodes, {2} edges), use the `--save-binary` flag to retrieve it.\n".format(elem["module"], elem.vcount(), elem.ecount()))
 
         # save the original graph into a binary file
         if self.args.save_binary:
@@ -356,7 +358,7 @@ class Communities():
         mods_list = []
         for i, elem in enumerate(mods):
             mods_list.append([str(i), ','.join(elem.vs["name"])])
-        r = pyntacleReporter(graph=graph)
+        r = PyntacleReporter(graph=graph)
         results['algorithm'] = algorithm
         results['communities'] = mods_list
         r.create_report(report_type=ReportEnum.Communities, report=results)

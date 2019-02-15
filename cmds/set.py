@@ -145,8 +145,8 @@ class Set:
             else:
                 plot_size = (1600, 1600)
 
-        if self.args.format == "sif" or all(x is None for x in graph1.es()["__sif_interaction"]) or all(
-                        x is None for x in graph2.es()["__sif_interaction"]):
+        if self.args.format == "sif" or all(x is None for x in graph1.es()["sif_interaction"]) or all(
+                        x is None for x in graph2.es()["sif_interaction"]):
             sys.stdout.write(u"Warning: Interaction stored in SIF files will be removed\n")
 
         if self.args.output_file is None:

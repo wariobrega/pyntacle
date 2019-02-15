@@ -29,6 +29,8 @@ html_template = u"""
 
 
 
+
+
 <!doctype html>
 
 <html lang="en">
@@ -62,6 +64,15 @@ html_template = u"""
 <script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.labels.def.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.hovers.def.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.nodes.def.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.nodes.cross.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.nodes.diamond.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.nodes.equilateral.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.nodes.square.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.nodes.star.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.edges.def.js"></script>
+<script src=".http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.edges.curve.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.edges.arrow.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.edges.curvedArrow.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.edges.def.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.edges.curve.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/sigma.canvas.edges.arrow.js"></script>
@@ -93,6 +104,12 @@ html_template = u"""
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.layouts.fruchtermanReingold/sigma.layout.fruchtermanReingold.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.layouts.dagre/sigma.layout.dagre.js"></script>
 
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.colorbrewer/sigma.plugins.colorbrewer.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.design/sigma.plugins.design.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.legend/settings.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.legend/sigma.plugins.legend.js"></script>
+<script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.exporters.image/sigma.exporters.image.js"></script>
+
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.plugins.relativeSize/sigma.plugins.relativeSize.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.parsers.json/sigma.parsers.json.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/sigma/plugins/sigma.parsers.gexf/sigma.parsers.gexf.js"></script>
@@ -111,6 +128,40 @@ html_template = u"""
 
 
 <script>
+  var myPalette = {
+    schemes: {
+      categoryScheme: {
+        "set1": '#7570b3',
+        "set2": '#1b9e77',
+        "set1,set2": "#d95f02"
+
+      }
+    }
+  };
+
+  var myStyles = {
+    nodes: {
+//      size: {
+//        by: 'data.properties.age',
+//        bins: 7,
+//        min: 3,
+//        max: 15
+//      },
+     color: {
+       by: 'attributes.parent',
+       scheme: 'schemes.categoryScheme'
+     },
+      // icon: {
+      //   by: 'data.properties.family_name_abc',
+      //   scheme: 'schemes.nameScheme'
+      // },
+      // type: {
+      //   by: 'data.properties.interest',
+      //   scheme: 'schemes.interestScheme'
+      // }
+    },
+  };
+
   function hexc(colorval) {
     var parts = colorval.match(/^rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)$/);
     delete(parts[0]);
@@ -149,7 +200,7 @@ $(function(){
     close: false,
     editTitle: false,
     expand: false,
-    // unpin: false,
+    unpin: false,
     minWidth: 430,
     minHeight: 110,
     maxWidth: 430,
@@ -258,7 +309,11 @@ $(function(){
 
 <script>
 
-  var nicenames_algorithms = {"KP_greedy":"Greedy", "KP_bruteforce":"Brute-force"}
+  var nicenames_algorithms = {"KP_greedy":"Greedy", "KP_bruteforce":"Brute-force",
+                              "GR_greedy":"Greedy", "GR_bruteforce":"Brute-force",
+                              "fastgreedy":"Fastgreedy", "community-walktrap":"Community-walktrap",
+                              "leading-eigenvector":"Leading eigenvector", "infomap":"Infomap"}
+
   function fillDropdown(defaultkey, subkeys, dest){
       console.log("IN FUNCTION!")
       console.log(defaultkey)
@@ -300,10 +355,18 @@ $(function(){
       var solutions = JSON.stringify(dict).replace(/\\\\"/g, '"')
       $("#"+command+"-buttons").html("");
       document.getElementById(command+'-buttons').style.visibility = 'visible';
-      document.getElementById(command+'-buttons').innerHTML += '<button \\
-            class="btn-success" type="button" onclick=\\'popUp("'+command+'",'+solutions+')\\'>\\
-                Show solutions\\
-            </button>'
+      if(command=='Set'){
+        document.getElementById(command+'-buttons').innerHTML += '<button \\
+              class="btn-success" type="button" onclick=\\'paintSet("'+command+'",'+solutions+')\\'>\\
+                  Show results\\
+              </button>'
+      }else{
+        document.getElementById(command+'-buttons').innerHTML += '<button \\
+              class="btn-success" type="button" onclick=\\'popUp("'+command+'",'+solutions+')\\'>\\
+                  Show solutions\\
+              </button>'
+      }
+
 
       // var keys = Object.keys(dict);
       // console.log(keys)
@@ -317,7 +380,9 @@ $(function(){
 <script>
   var nicenames = {"mreach":"m-reach", "group_closeness_minimum": "closeness (min)",
                    "group_closeness_mean": "closeness (mean)",
-                   "group_closeness_maximum": "closeness (max)" }
+                   "group_closeness_maximum": "closeness (max)" };
+  var metrics_with_initialvalues = ["F", "dF"];
+
   function popUp(arg,dict){
     console.log(arg)
     console.log(dict)
@@ -339,9 +404,9 @@ $(function(){
      editTitle: false,
      expand: false,
      // unpin: false,
-     minWidth: 400,
+     minWidth: 500,
      minHeight: 315,
-     maxWidth: 400,
+     maxWidth: 500,
      maxHeight: 315,
      resize: "both",
    });
@@ -358,8 +423,28 @@ $(function(){
     // instancesolutions.enableResize();
     $('#'+arg+'-solutions-pane').show();
     $('#'+arg+'-solutions-body').empty()
-    $('#'+arg+'-solutions-body').html("<table id='"+arg+"-table' class='table-striped solutionstable'></table>")
+    $('#'+arg+'-solutions-body').html("<table id='"+arg+"-table' class='table table-striped solutionstable'></table>")
+    var value_columns = 1;
+    if(arg=='Communities'){
+      value_columns = 0;
+    }else if ('dF' in dict || 'F' in dict) {
+        value_columns=2
+    }
+    if(arg=='Key-player'||arg=='Group-centrality'){
+        $('#'+arg+'-table').append('<thead id="'+arg+'-tablehead">')
+        $('#'+arg+'-tablehead').append('<tr id="'+arg+'-header">')
+        $('#'+arg+'-header').append('<th>Metric</th>')
+        $('#'+arg+'-header').append('<th>Solutions</th>')
+        if(value_columns==2){
+            $('#'+arg+'-header').append('<th>Initial value</th>')
+        }
+        $('#'+arg+'-header').append('<th>Value</th>')
+        $('#'+arg+'-table').append('</tr>')
+        $('#'+arg+'-table').append('</thead>')
+    }
 
+
+    console.log("Valuie columns: "+value_columns)
     for(key in dict){
       $('#'+arg+'-table').append('<tr id="'+key+'-row">')
       if(key in nicenames){
@@ -368,19 +453,35 @@ $(function(){
         label = key.replace('group_','').replace('_',' ')
       }
 
-      $('#'+key+'-row').append('<td class="metric keycell">'+label+':</td>');
+      $('#'+key+'-row').append('<td class="keycell metric">'+label+'</td>');
       console.log(dict[key]);
       console.log("SPLIT:");
-      var splitsolutions = dict[key].split(';')
+      var splitsolutions = dict[key][0].split(';')
       console.log(splitsolutions)
       $('#'+key+'-row').append('<td id="'+key+'-solutionscell" class="solutionscell">');
       for(key2 in splitsolutions){
         console.log("KEY2")
+        console.log(key2)
         console.log(splitsolutions[key2])
         $('#'+key+'-solutionscell').append('<button class="btn btn-success btn-outline btn-xs solbutton"\\
-                onclick="onSearch(\\''+splitsolutions[key2]+'\\'.split(\\',\\'))">'+splitsolutions[key2]+'</button>');
+                onclick="onSearch(\\''+splitsolutions[key2]+'\\'.split(\\',\\'))">'+splitsolutions[key2].replace(/,/g,', ')+'</button>');
       }
       $('#'+key+'-row').append('</td>');
+      if(value_columns!=0){
+        if(value_columns==2){
+          if(metrics_with_initialvalues.includes(key)){
+            $('#'+key+'-row').append('<td class="value-col">'+dict[key][1]+'</td>');
+            $('#'+key+'-row').append('<td class="value-col">'+dict[key][2]+'</td>');
+          }else{
+            $('#'+key+'-row').append('<td class="value-col"></td><td class="value-col">'+dict[key][1]+'</td>');
+          }
+        }else{
+          console.log("DICT KEY 1")
+          console.log(dict[key][1])
+          $('#'+key+'-row').append('<td class="value-col">'+dict[key][1]+'</td>');
+        };
+      };
+
       $('#'+arg+'-table').append('</tr>');
     }
   }
@@ -1436,6 +1537,52 @@ $(function(){
                 console.log("do do do "+node.id)
         }
 
+
+        function paintSet(arg, dict){
+          console.log("in Paintset");
+          console.log(dict[0])
+          var n_toKeep = dict[0][0].split(',');
+          var e_toKeep = dict[0][1].split(';');
+          var e_toKeep_ids = []
+          var ids_to_mask = [];
+          var labels_to_ids = {};
+          console.log(n_toKeep)
+
+          s.graph.nodes().forEach(function(n){
+            console.log("Check "+n["label"])
+            labels_to_ids[n["label"]]=n.id
+
+            if(n_toKeep.includes(n["label"])){
+              console.log(n["label"]+" is kept alive with id "+ n.id)
+            }else{
+              n.color = '#fdfdfd';
+            }
+          });
+
+          console.log("labels_to_ids")
+          console.log(labels_to_ids)
+          console.log(e_toKeep)
+          console.log(s.graph.edges())
+
+          e_toKeep.forEach(function(e){
+            var source = labels_to_ids[e.split('-')[0]]
+            var target = labels_to_ids[e.split('-')[1]]
+            e_toKeep_ids.push(source+"-"+target)
+          });
+          console.log(e_toKeep_ids)
+          s.graph.edges().forEach(function(e){
+            console.log(e)
+            if(!e_toKeep_ids.includes(e.source+'-'+e.target)){
+              e.color = '#fdfdfd';
+            }
+            console.log(e.source)
+            console.log(e.target)
+
+          });
+
+          s.refresh();
+        }
+
         // When searching
         function onSearch(query) {
                 var nodes = s.graph.nodes();
@@ -1723,11 +1870,56 @@ $(function(){
           });
         }
 
-      _.$('export-png').addEventListener("click", function(event) {
-  generateImage(event, true)
-});
-      s.refresh()
-      applyRandom();
+        _.$('export-png').addEventListener("click", function(event) {
+              generateImage(event, true)
+        });
+
+
+        var design = sigma.plugins.design(s, {
+          styles: myStyles,
+          palette: myPalette
+        });
+
+        design.apply();
+
+        var legendPlugin, textWidget, nodeIconWidget;
+
+        function init() {
+              legendPlugin = sigma.plugins.legend(s, true);
+          //    legendPlugin.removeAllWidgets();
+              legendPlugin.setExternalCSS(['http://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css']);
+              //legendPlugin.setPlacement('right');
+              //legendPlugin.addWidget('edge', 'size').setUnit('%');
+          //    textWidget = legendPlugin.addTextWidget('some text');
+          //    textWidget.setText('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.');
+              //legendPlugin.setVisibility(false);
+              //legendPlugin.exportPng();
+              if(!("Set" in reportData)){legendPlugin.setVisibility(false);}
+
+          //    setTimeout(function () { legendPlugin.exportSvg(); }, 500);
+            }
+
+            // In case the WebGL renderer is used, we must wait for FontAwesome to be loaded.
+            // http://www.w3.org/TR/css-font-loading/
+            if (document.fonts) {
+              // document.fonts.ready() method is going to be replaced with
+              // document.fonts.ready attribute in the future.
+              var fontsReady = document.fonts.ready;
+              if (typeof(fontsReady) == "function") {
+                fontsReady = document.fonts.ready();
+              }
+              fontsReady.then(init);
+            }
+            else {
+              // wait or use a polyfill such as:
+              // https://github.com/zachleat/fontfaceonload
+              // https://github.com/smnh/FontLoader
+              setTimeout(init, 2000);
+            }
+
+
+        s.refresh()
+        applyRandom();
 
   </script>
   <!-- <div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
@@ -1755,17 +1947,12 @@ $(function(){
 </html>
 
 
+
 """
 
 
 
 css_template = u"""
-
-
-
-
-
-
 
 #network-graph {
       top: 0;
@@ -1949,7 +2136,7 @@ select option {
 }
 
 .solutionstable {
-    table-layout: fixed; 
+    /*table-layout: fixed;*/ 
     width: -webkit-fill-available;
 }
 .keycell{
@@ -1958,11 +2145,13 @@ select option {
     vertical-align: top;
     font-weight: bold;
 }
+.metric{
+    width: 27%;
+}
 .solutionscell{
     width:-webkit-fill-available;
     padding: 8px 0 3px 0;
     word-wrap: break-word; 
-    float: left;
 }
 .solbutton{
     background-color:#ffffff;
@@ -1991,7 +2180,6 @@ input[type=checkbox] {
     margin-top: 15px;
     border: 1px solid #ceead9;
 }
-
 
 
 """

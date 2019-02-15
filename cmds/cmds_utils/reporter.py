@@ -216,16 +216,15 @@ class PyntacleReporter():
             json_data["Key-player"][str(self.report_type).split('.')[1]].setdefault(self.dat, {})
             # multiple_sol
             for k in report_dict:
-                print(report_dict[k][0])
 
                 if self.report_type == ReportEnum.KP_greedy:
-                    json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k] = ','.join(report_dict[k][0])
+                    json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k] = [','.join(report_dict[k][0])]
 
                 elif self.report_type == ReportEnum.KP_bruteforce:
-                    json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k] = ';'.join(list(','.join(sol) for sol in report_dict[k][0]))
+                    json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k] = [';'.join(list(','.join(sol) for sol in report_dict[k][0]))]
 
-                    # print(';'.join(list(','.join(sol) for sol in report_dict[k][0])))
-                    # print(sol.join(',') for sol in report_dict[k][0])
+                #Adding numerical values of solutions
+                json_data["Key-player"][str(self.report_type).split('.')[1]][self.dat][k].extend(report_dict[k][1:])
 
         if self.report_type == ReportEnum.GR_bruteforce or self.report_type == ReportEnum.GR_greedy:
             json_data.setdefault("Group-centrality", {})
@@ -236,27 +235,35 @@ class PyntacleReporter():
                 print(report_dict[k][0])
 
                 if self.report_type == ReportEnum.GR_greedy:
-                    json_data["Group-centrality"][str(self.report_type).split('.')[1]][self.dat][k] = ','.join(report_dict[k][0])
+                    json_data["Group-centrality"][str(self.report_type).split('.')[1]][self.dat][k] = [','.join(report_dict[k][0])]
 
                 elif self.report_type == ReportEnum.GR_bruteforce:
-                    json_data["Group-centrality"][str(self.report_type).split('.')[1]][self.dat][k] = ';'.join(list(','.join(sol) for sol in report_dict[k][0]))
+                    json_data["Group-centrality"][str(self.report_type).split('.')[1]][self.dat][k] = [';'.join(list(','.join(sol) for sol in report_dict[k][0]))]
 
-                    # print(';'.join(list(','.join(sol) for sol in report_dict[k][0])))
-                    # print(sol.join(',') for sol in report_dict[k][0])
+                # Adding numerical values of solutions
+                json_data["Group-centrality"][str(self.report_type).split('.')[1]][self.dat][k].extend(report_dict[k][1:])
 
         if self.report_type == ReportEnum.Communities:
             json_data.setdefault("Communities", {})
             json_data["Communities"].setdefault(report_dict["algorithm"], {})
             json_data["Communities"][report_dict["algorithm"]].setdefault(self.dat, {})
             for i, k in enumerate(report_dict["communities"]):
-                json_data["Communities"][report_dict["algorithm"]][self.dat][i] = report_dict["communities"][i][1]
+                json_data["Communities"][report_dict["algorithm"]][self.dat][i] = [report_dict["communities"][i][1]]
 
         if self.report_type == ReportEnum.Set:
             json_data.setdefault("Set", {})
             json_data["Set"].setdefault(report_dict["algorithm"], {})
             json_data["Set"][report_dict["algorithm"]].setdefault(self.dat, {})
-            json_data["Set"][report_dict["algorithm"]][self.dat] = report_dict[0]
-
+            for k in report_dict.keys():
+                if k == 'algorithm':
+                    continue
+                json_data["Set"][report_dict["algorithm"]][self.dat][k] = [report_dict[k]['nodes'], ';'.join(['-'.join(e) for e in report_dict[k]['edges']])]
+                # edges=[', '.join(e) for e in report_dict[k]['edges']]
+                # for edge in report_dict[k]['edges']:
+                #     print(edge)
+            # print(edges)
+            print(json_data)
+            input()
         #exporting results in json format
         with open(json_report, 'w') as f:
             f.write("var reportData = ")
