@@ -262,8 +262,23 @@ class PyntacleReporter():
                 # for edge in report_dict[k]['edges']:
                 #     print(edge)
             # print(edges)
-            print(json_data)
-            input()
+
+
+        # Adding minimal graph info
+        json_data.setdefault("Info", {})
+        json_data["Info"]['graph name'] = self.graph["name"][0]
+        json_data["Info"]['nodes'] = len(self.graph.vs())
+        json_data["Info"]['edges'] = len(self.graph.es())
+        json_data["Info"]['components'] = len(self.graph.components())
+
+        # Adding global metrics to the basic info, if available
+        if self.report_type == ReportEnum.Global:
+            for i in report_dict.keys():
+                json_data["Info"][i] = report_dict[i]
+
+
+
+
         #exporting results in json format
         with open(json_report, 'w') as f:
             f.write("var reportData = ")
@@ -281,7 +296,7 @@ class PyntacleReporter():
     def __local_report(self, reportdict:OrderedDict):
         r"""
         Fill the `report` object  with information regarding the metrics for each node (nodes must be specified in
-        the reportdic `nodes' key. if that kjey is not specified, it will assume that the local metrics are
+        the reportdic `nodes' key. if that key is not specified, it will assume that the local metrics are
         reported for all nodes)
 
         :param reportdict: a report dictionary object with each local attribute as key and a list of values as value,

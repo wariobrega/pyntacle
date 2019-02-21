@@ -25,12 +25,6 @@ __license__ = u"""
   """
 
 html_template = u"""
-
-
-
-
-
-
 <!doctype html>
 
 <html lang="en">
@@ -125,368 +119,9 @@ html_template = u"""
 <script src="http://pyntacle.css-mendel.it/js/viewer/jscolor.js"></script>
 <script src="http://pyntacle.css-mendel.it/js/viewer/palette.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
-
-
-<script>
-  var myPalette = {
-    schemes: {
-      categoryScheme: {
-        "set1": '#7570b3',
-        "set2": '#1b9e77',
-        "set1,set2": "#d95f02"
-
-      }
-    }
-  };
-
-  var myStyles = {
-    nodes: {
-//      size: {
-//        by: 'data.properties.age',
-//        bins: 7,
-//        min: 3,
-//        max: 15
-//      },
-     color: {
-       by: 'attributes.parent',
-       scheme: 'schemes.categoryScheme'
-     },
-      // icon: {
-      //   by: 'data.properties.family_name_abc',
-      //   scheme: 'schemes.nameScheme'
-      // },
-      // type: {
-      //   by: 'data.properties.interest',
-      //   scheme: 'schemes.interestScheme'
-      // }
-    },
-  };
-
-  function hexc(colorval) {
-    var parts = colorval.match(/^rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)$/);
-    delete(parts[0]);
-    for (var i = 1; i <= 3; ++i) {
-        parts[i] = parseInt(parts[i]).toString(16);
-        if (parts[i].length == 1) parts[i] = '0' + parts[i];
-    }
-    color = parts.join('');
-
-    return color;
-  }
-
-  Array.prototype.remove = function() {
-      var what, a = arguments, L = a.length, ax;
-      while (L && this.length) {
-          what = a[--L];
-          while ((ax = this.indexOf(what)) !== -1) {
-              this.splice(ax, 1);
-          }
-      }
-      return this;
-  };
-
-  Object.defineProperty(Array.prototype, 'remove', {
-    writeable: true,
-    enumerable: false,
-    value: Array.prototype.remove
-  })
-</script>
-<script>
-
-$(function(){
-
-  $('.resultspanel').lobiPanel({
-    reload: false,
-    close: false,
-    editTitle: false,
-    expand: false,
-    unpin: false,
-    minWidth: 430,
-    minHeight: 110,
-    maxWidth: 430,
-    maxHeight: 480,
-    resize: "both"
-  });
-
-  $('.controlspanel').lobiPanel({
-    reload: false,
-    close: false,
-    editTitle: false,
-    expand: false,
-    unpin: false,
-    minWidth: 260,
-    minHeight: 315,
-    maxWidth: 260,
-    maxHeight: 395,
-  });
-
-  $('.layoutspanel').lobiPanel({
-    reload: false,
-    close: false,
-    editTitle: false,
-    expand: false,
-    unpin: false,
-    minWidth: 260,
-    minHeight: 235,
-    maxWidth: 260,
-    maxHeight: 235,
-    resize: "both"
-  });
-
-  var positions = [200, 320, 440, 560];
-  if ($('#Key-player-results-pane').is(':visible')){
-      var instancekp = $('#Key-player-results-pane').data('lobiPanel');
-      instancekp.unpin();
-      instancekp.setPosition(10, positions.shift());
-      instancekp.enableResize();
-  }
-
-  if ($('#Group-centrality-results-pane').is(':visible')){
-      var instancegc = $('#Group-centrality-results-pane').data('lobiPanel');
-      instancegc.unpin();
-      instancegc.setPosition(10, positions.shift());
-      instancegc.enableResize();
-  }
-
-  if ($('#Communities-results-pane').is(':visible')){
-    var instancecom = $('#Communities-results-pane').data('lobiPanel');
-    instancecom.unpin();
-    instancecom.setPosition(10, positions.shift());
-    instancecom.enableResize();
-  }
-
-  if ($('#Set-results-pane').is(':visible')){
-    var instanceset = $('#Set-results-pane').data('lobiPanel');
-    instanceset.unpin();
-    instanceset.setPosition(10, positions.shift());
-    instanceset.enableResize();
-  }
-
-  var instancecontrols = $('#control-pane').data('lobiPanel');
-  instancecontrols.unpin();
-  instancecontrols.setPosition('right', 200)
-
-  var instancelayouts = $('#layouts-pane').data('lobiPanel');
-  instancelayouts.unpin();
-  instancelayouts.setPosition('right', 560)
-
-  var instancesolutionsgc = $('#Group-centrality-solutions-pane').data('lobiPanel');
-  instancesolutionsgc.unpin();
-  instancesolutionsgc.setPosition(instancegc.getPosition().x+430, instancegc.getPosition().y);
-  instancesolutionsgc.enableResize();
-
-  var instancesolutionscom = $('#Communities-solutions-pane').data('lobiPanel');
-  instancesolutionscom.unpin();
-  instancesolutionscom.setPosition(instancecom.getPosition().x+430, instancecom.getPosition().y);
-  instancesolutionscom.enableResize();
-
-  var instancesolutionsset = $('#Set-solutions-pane').data('lobiPanel');
-  instancesolutionsset.unpin();
-  instancesolutionsset.setPosition(instanceset.getPosition().x+430, instanceset.getPosition().y);
-  instancesolutionsset.enableResize();
-});
-
-</script>
+<script src="http://pyntacle.css-mendel.it/js/viewer/pyntacle_ink.js"></script>
 <script src="graph.js"></script>
 <script src="report.js"></script>
-<script>
-  function findDepth(object){
-    var level = 0;
-    var key;
-    for(key in object) {
-        if (!object.hasOwnProperty(key)) continue;
-
-        if(typeof object[key] == 'object'){
-            var depth = findDepth(object[key]) + 1;
-            level = Math.max(depth, level);
-        }
-    }
-    return level;
-}
-</script>
-
-
-
-<script>
-
-  var nicenames_algorithms = {"KP_greedy":"Greedy", "KP_bruteforce":"Brute-force",
-                              "GR_greedy":"Greedy", "GR_bruteforce":"Brute-force",
-                              "fastgreedy":"Fastgreedy", "community-walktrap":"Community-walktrap",
-                              "leading-eigenvector":"Leading eigenvector", "infomap":"Infomap"}
-
-  function fillDropdown(defaultkey, subkeys, dest){
-      console.log("IN FUNCTION!")
-      console.log(defaultkey)
-      console.log(dest)
-      console.log(subkeys);
-      let dropdown = $('#'+dest);
-      $(dropdown).empty();
-      dropdown.append('<option  selected disabled hidden>'+defaultkey+'</option>');
-      dropdown.prop('selectedIndex', 0);
-      for(var i=0; i<subkeys.length; i++){
-        console.log("ENTRY?")
-        console.log(subkeys[i])
-        if(subkeys[i] in nicenames_algorithms){
-          label = nicenames_algorithms[subkeys[i]]
-        }else{
-          label = subkeys[i]
-        }
-
-        if(defaultkey=="Run"){
-          console.log("this is subkeys[i] " + subkeys[i])
-          date = subkeys[i].split('-')
-          label = date.slice(0,3).join('-')+"-"+date[date.length-1].match(/.{2}/g).join(':');
-        }
-        dropdown.append($('<option></option>').attr('value', subkeys[i]).text(label))
-      }
-      // $.each(subkeys, function (entry) {
-      //
-      //   ;
-      // })
-  };
-
-</script>
-
-
-<script>
-  function paintButtons(command, dict){
-      console.log("IN PAINT")
-      console.log(command)
-      var solutions = JSON.stringify(dict).replace(/\\\\"/g, '"')
-      $("#"+command+"-buttons").html("");
-      document.getElementById(command+'-buttons').style.visibility = 'visible';
-      if(command=='Set'){
-        document.getElementById(command+'-buttons').innerHTML += '<button \\
-              class="btn-success" type="button" onclick=\\'paintSet("'+command+'",'+solutions+')\\'>\\
-                  Show results\\
-              </button>'
-      }else{
-        document.getElementById(command+'-buttons').innerHTML += '<button \\
-              class="btn-success" type="button" onclick=\\'popUp("'+command+'",'+solutions+')\\'>\\
-                  Show solutions\\
-              </button>'
-      }
-
-
-      // var keys = Object.keys(dict);
-      // console.log(keys)
-      // for(var i=0; i<keys.length; i++){
-      //   document.getElementById(command+'-buttons').innerHTML += '<button \\
-      //     onclick="popUp('+dict[keys[i]]+')">'+keys[i]+'</button>'
-      // }
-  }
-</script>
-
-<script>
-  var nicenames = {"mreach":"m-reach", "group_closeness_minimum": "closeness (min)",
-                   "group_closeness_mean": "closeness (mean)",
-                   "group_closeness_maximum": "closeness (max)" };
-  var metrics_with_initialvalues = ["F", "dF"];
-
-  function popUp(arg,dict){
-    console.log(arg)
-    console.log(dict)
-    if (document.getElementById(arg+'-solutions-pane')){
-      document.getElementById(arg+'-solutions-pane').parentNode.removeChild(document.getElementById(arg+'-solutions-pane'));
-    };
-    document.getElementById(arg+"-solcol").innerHTML = '<div id="'+arg+'-solutions-pane" class="panel panel-default solutionspanel" style="display:hidden !important">\\
-        <div class="panel-heading">\\
-            <div class="panel-title">\\
-                <h2 class="underline">'+arg.replace('-',' ').toLowerCase()+' solutions</h2>\\
-            </div>\\
-        </div>\\
-        <div id="'+arg+'-solutions-body" class="panel-body">\\
-        </div>\\
-     </div>'
-
-   $('.solutionspanel').lobiPanel({
-     reload: false,
-     editTitle: false,
-     expand: false,
-     // unpin: false,
-     minWidth: 500,
-     minHeight: 315,
-     maxWidth: 500,
-     maxHeight: 315,
-     resize: "both",
-   });
-    var instanceresults = $('#'+arg+'-results-pane').data('lobiPanel');
-    var instancesolutions = $('#'+arg+'-solutions-pane').data('lobiPanel');
-    instancesolutions.unpin();
-    instancesolutions.setPosition(instanceresults.getPosition().x+430, instanceresults.getPosition().y);
-    instancesolutions.enableResize();
-
-    // var instanceresults = $('#'+arg+'-results-pane').data('lobiPanel');
-    // var instancesolutions = $('#'+arg+'-solutions-pane').data('lobiPanel');
-    // instancesolutions.unpin();
-    // instancesolutions.setPosition(instanceresults.getPosition().x+440, instanceresults.getPosition().y);
-    // instancesolutions.enableResize();
-    $('#'+arg+'-solutions-pane').show();
-    $('#'+arg+'-solutions-body').empty()
-    $('#'+arg+'-solutions-body').html("<table id='"+arg+"-table' class='table table-striped solutionstable'></table>")
-    var value_columns = 1;
-    if(arg=='Communities'){
-      value_columns = 0;
-    }else if ('dF' in dict || 'F' in dict) {
-        value_columns=2
-    }
-    if(arg=='Key-player'||arg=='Group-centrality'){
-        $('#'+arg+'-table').append('<thead id="'+arg+'-tablehead">')
-        $('#'+arg+'-tablehead').append('<tr id="'+arg+'-header">')
-        $('#'+arg+'-header').append('<th>Metric</th>')
-        $('#'+arg+'-header').append('<th>Solutions</th>')
-        if(value_columns==2){
-            $('#'+arg+'-header').append('<th>Initial value</th>')
-        }
-        $('#'+arg+'-header').append('<th>Value</th>')
-        $('#'+arg+'-table').append('</tr>')
-        $('#'+arg+'-table').append('</thead>')
-    }
-
-
-    console.log("Valuie columns: "+value_columns)
-    for(key in dict){
-      $('#'+arg+'-table').append('<tr id="'+key+'-row">')
-      if(key in nicenames){
-        label = nicenames[key]
-      }else{
-        label = key.replace('group_','').replace('_',' ')
-      }
-
-      $('#'+key+'-row').append('<td class="keycell metric">'+label+'</td>');
-      console.log(dict[key]);
-      console.log("SPLIT:");
-      var splitsolutions = dict[key][0].split(';')
-      console.log(splitsolutions)
-      $('#'+key+'-row').append('<td id="'+key+'-solutionscell" class="solutionscell">');
-      for(key2 in splitsolutions){
-        console.log("KEY2")
-        console.log(key2)
-        console.log(splitsolutions[key2])
-        $('#'+key+'-solutionscell').append('<button class="btn btn-success btn-outline btn-xs solbutton"\\
-                onclick="onSearch(\\''+splitsolutions[key2]+'\\'.split(\\',\\'))">'+splitsolutions[key2].replace(/,/g,', ')+'</button>');
-      }
-      $('#'+key+'-row').append('</td>');
-      if(value_columns!=0){
-        if(value_columns==2){
-          if(metrics_with_initialvalues.includes(key)){
-            $('#'+key+'-row').append('<td class="value-col">'+dict[key][1]+'</td>');
-            $('#'+key+'-row').append('<td class="value-col">'+dict[key][2]+'</td>');
-          }else{
-            $('#'+key+'-row').append('<td class="value-col"></td><td class="value-col">'+dict[key][1]+'</td>');
-          }
-        }else{
-          console.log("DICT KEY 1")
-          console.log(dict[key][1])
-          $('#'+key+'-row').append('<td class="value-col">'+dict[key][1]+'</td>');
-        };
-      };
-
-      $('#'+arg+'-table').append('</tr>');
-    }
-  }
-
-</script>
 
 </head>
 
@@ -495,243 +130,6 @@ $(function(){
         	<img class="img-fluid" style="padding-left: 5px; padding-right:5px" src="http://pyntacle.css-mendel.it/images/pyntacle_ink.png" alt="inn_logo">
   </div>
   <div id="container">
-
-        <!-- Import Sigma JS -->
-
-
-        <!-- Add some CSS so we can see the graph! -->
-        <style>
-          #network-graph {
-            position: absolute;
-            top: 180px;
-            bottom: 0;
-            left: 0;
-            right: 0;
-          }
-          body {
-            color: #333;
-            font-size: 14px;
-            font-family: Lato, sans-serif;
-          }
-
-          #control-pane {
-            /* top: 10px; */
-            /*bottom: 10px;*/
-            right: 10px;
-            position: absolute;
-            width: 230px;
-            /* background-color: rgb(249, 247, 237); */
-            /* box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3); */
-          }
-          #control-pane > div {
-            /* margin: 10px; */
-            overflow-x: auto;
-          }
-          input[type="range"] {
-            display: inline-block;
-          }
-
-          #layouts-pane {
-            /* top: 335px !important; */
-            /*bottom: 10px;*/
-            right: 10px;
-            position: absolute;
-            width: 230px;
-            /* background-color: rgb(249, 247, 237); */
-            /* box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3); */
-          }
-
-          #layouts-pane, .panel-minimized{
-            position: unset;
-          }
-
-          #control-pane, .panel-minimized{
-            position: unset;
-          }
-
-          #results-pane{
-            /* left: 23px !important;
-            top: 15.5px !important; */
-            z-index: 10001 !important;
-            width: 450px !important;
-            /* right: auto !important; */
-            height: 340px !important;
-            /* bottom: auto !important; */
-            background-color: rgb(249, 247, 237);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          }
-          #results-pane > div {
-            /* margin: 10px; */
-            margin-top: 5px;
-            /* overflow-x: auto; */
-          }
-
-          .buttons-div{
-            display: inline-flex;
-          }
-
-          .buttons-div > select{
-            flex:1 1 auto;
-            height: 27px;
-            width: auto;
-            /* border:1px red solid; */
-            text-align:center;
-
-            margin:5px;
-          }
-
-          .buttons-div > div{
-            flex:1 1 auto;
-            /* border:1px red solid; */
-            text-align:center;
-          }
-
-          .buttons-div > div button{
-            flex:1 1 auto;
-            height: 27px;
-            width: auto;
-            /* border:1px red solid; */
-            text-align:center;
-
-            margin:5px;
-          }
-
-          .command-header{
-            color: #96764d;
-            font-size: 22px;
-          }
-          .line {
-            clear: both;
-            display: block;
-            width: 100%;
-            margin: 0;
-            padding: 12px 0 0 0;
-            border-bottom: 1px solid #aac789;
-            background: transparent;
-          }
-          h2, h3, h4 {
-            padding: 0;
-            font-variant: small-caps;
-          }
-          .green {
-            color: #437356;
-          }
-          h2.underline {
-            color: #437356;
-            /* background: #f4f0e4; */
-            margin: 0;
-            border-radius: 2px;
-            /* padding: 8px 12px; */
-            font-weight: 700;
-          }
-          .hidden {
-            display: none;
-            visibility: hidden;
-          }
-
-          input[type=range] {
-            width: 160px;
-          }
-
-          .sigma-tooltip {
-            max-width: 440px;
-            max-height: 680px;
-            background-color: rgba(249, 247, 237, 0.95);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            border-radius: 6px;
-          }
-
-          .sigma-tooltip-header {
-            font-variant: small-caps;
-            font-size: 120%;
-            color: #437356;
-            border-bottom: 1px solid #aac789;
-            padding: 10px;
-          }
-
-          .sigma-tooltip-body {
-            padding: 10px;
-          }
-
-          .sigma-tooltip-body th {
-            color: #999;
-            text-align: left;
-          }
-
-          .sigma-tooltip-footer {
-            padding: 10px;
-            border-top: 1px solid #aac789;
-          }
-
-          .sigma-tooltip > .arrow {
-            border-width: 10px;
-            position: absolute;
-            display: block;
-            width: 0;
-            height: 0;
-            border-color: transparent;
-            border-style: solid;
-          }
-
-          .sigma-tooltip.top {
-            margin-top: -12px;
-          }
-          .sigma-tooltip.top > .arrow {
-            left: 50%;
-            bottom: -10px;
-            margin-left: -10px;
-            border-top-color: rgb(249, 247, 237);
-            border-bottom-width: 0;
-          }
-
-          .sigma-tooltip.bottom {
-            margin-top: 12px;
-          }
-          .sigma-tooltip.bottom > .arrow {
-            left: 50%;
-            top: -10px;
-            margin-left: -10px;
-            border-bottom-color: rgb(249, 247, 237);
-            border-top-width: 0;
-          }
-
-          .sigma-tooltip.left {
-            margin-left: -12px;
-          }
-          .sigma-tooltip.left > .arrow {
-            top: 50%;
-            right: -10px;
-            margin-top: -10px;
-            border-left-color: rgb(249, 247, 237);
-            border-right-width: 0;
-          }
-
-          .sigma-tooltip.right {
-            margin-left: 12px;
-          }
-          .sigma-tooltip.right > .arrow {
-            top: 50%;
-            left: -10px;
-            margin-top: -10px;
-            border-right-color: rgb(249, 247, 237);
-            border-left-width: 0;
-          }
-
-    	  .sigma-tooltip > .sigma-tooltip-body > table > tbody > tr > td {
-    	    padding-left: 10px;
-    	    word-break: break-word;
-    	  }
-
-        .swal2-container{
-          z-index:99999999;
-        }
-
-        .alertmodal{
-          border: 2px solid #ceead9;
-        }
-
-
-        </style>
 
         <!-- A placeholder for the graph -->
         <div id="network-graph"></div>
@@ -780,10 +178,6 @@ $(function(){
                     </select>
                   </div>
                   <div id ="multiselect-container">
-                      <!-- <div id="multiselect-label" style="display: -webkit-inline-box;">
-                          <h3 id="catattr-val" style="margin-top: 8px;">values for</h3>&nbsp
-                          <h3 id="attr-multiselect-label" style="margin-top: 8px;"></h3>
-                      </div> -->
                       <div id="multiselect-div">
                           <table id="multiselect-table" class="table table-striped table-responsive">
 
@@ -882,9 +276,6 @@ $(function(){
 
         </div>
 
-
-
-
         <div class="row"  style="width: fit-content;">
               <div class="col-sm-6" style="width:450px; margin-left: 30px;">
 
@@ -902,13 +293,23 @@ $(function(){
             <div class="col-sm-6" id="Set-solcol" style="width:450px; margin-left: 30px;">
             </div>
         </div>
-      <!-- <div id="results-pane" class="panel panel-default">
-        <div class="panel-heading">
-          <div class="panel-title">
-              Titolo
-          </div>
+
+
+        <div class="row" style="width: fit-content;">
+              <div class="col-sm-6" style="width:450px; margin-left: 30px;">
+                    <div id="info-pane" class="panel panel-default infopanel" style="display:hidden !important">
+                        <div class="panel-heading" style="background-color: #c1dbe8;">
+                            <div class="panel-title">
+                                <h2 class="underline" style="color: #435c73;">graph info</h2>
+                            </div>
+                        </div>
+                        <div id="info-space" class="panel-body">
+                        </div>
+                    </div>
+              </div>
+              <div class="col-sm-6" id="info-solcol" style="width:450px; margin-left: 30px;">
+              </div>
         </div>
-        <div class="panel-body"></div> -->
   </div>
 
       <!-- The most basic usage of the Sigma JSON parser -->
@@ -916,11 +317,8 @@ $(function(){
         g = graphData;
         var config = {
           node: {
-            // show: 'clickNode',
-            // hide: 'clickStage',
             cssClass: 'sigma-tooltip',
             position: 'top',
-            //autoadjust: true,
             template:
             '<div class="arrow"></div>' +
             ' <div class="sigma-tooltip-header">{{label}}</div>' +
@@ -929,12 +327,8 @@ $(function(){
             renderer: function(node, template) {
               // The function context is s.graph
               node.degree = this.degree(node.id);
-              console.log("ATTRIBUTI")
-              console.log(node)
-              console.log(node.attributes)
               for(n in node.attributes){
                   if(n.startsWith("__") == false && n != 'parent'){
-                    console.log("attributo "+n+ " = "+ node.attributes[n])
                     template+="<tr><th>"+n+"</th> <td>"+node.attributes[n]+"</td></tr>"
                   }
               }
@@ -944,19 +338,13 @@ $(function(){
               '  <div class="sigma-tooltip-footer">' +
               '  Neighbors ({{degree}}): '
               // Returns an HTML string:
-              console.log("Neighbors list:")
               var neighbors = this.nodeneighbors(node.id);
               var neighbors_names = [];
               for(k in neighbors){
                 neighbors_names.push('<a href="#" onclick="onSearch(\\''+neighbors[k].label+'\\'.split(\\',\\'));return false;">'+neighbors[k].label+'</a>')
               }
               template+=neighbors_names.join(', ')+'  </div>';
-              // console.log(this.nodeneighbors(node.id))
               return Mustache.render(template, node);
-
-              // Returns a DOM Element:
-              //var el = document.createElement('div');
-              //return el.innerHTML = Mustache.render(template, node);
             }
           }
         };
@@ -983,9 +371,6 @@ $(function(){
 
           for (k in index)
             neighbors[k] = this.nodesIndex[k];
-
-          console.log("FOUND NEIGHBORS")
-          console.log(neighbors)
           return neighbors;
         });
 
@@ -1021,7 +406,6 @@ $(function(){
               for (var i = 0; i < len; i++) {
                   nodes[i].x = Math.random()*50;
                   nodes[i].y = Math.random()*50;
-                  // nodes[i].color = nodes[i].center ? '#333' : '#666';
               }
               sigma.misc.animation.camera(
                 s.camera,
@@ -1076,8 +460,6 @@ $(function(){
           //Call refresh to render the new graph
           s.refresh();
         }
-
-        // s.refresh();
 
 
         function lookupNodesByKeyValue(sigmaInstance, key, value) {
@@ -1145,7 +527,6 @@ $(function(){
             var l = nodes.length;
             for ( i = 0 ; i < l; i++ ) {
               var el = nodes[i];
-              //el.style.display = (el.style.display != 'none' ? 'none' : '' );
               // Bootstrap compatibility
               if (-1 !== el.className.indexOf(cssClass)) {
                 el.className = el.className.replace(cssClass, '');
@@ -1164,12 +545,8 @@ $(function(){
             var catattr = []
             var arrayattr = []
             graph.nodes().forEach(function(n) {
-              // console.log("Nodo "+n.id+" Degree: "+graph.degree(n.id))
-              console.log(n.attributes);
               for(var a in n.attributes){
-                if(!a.startsWith("__") && a!='name' && a!='parent'){
-                  console.log(n.attributes[a]);
-                  console.log("is numeric? "+ is_numeric(n.attributes[a]));
+                if(!a.startsWith("__") && a!='name' && a!='parent' && a!='module'){
                   var isnumeric = is_numeric(n.attributes[a]);
                   if(isnumeric == "array"){
                     arrayattr.push(a)
@@ -1188,7 +565,6 @@ $(function(){
               attrlist = "<div style='font-size: 14px;'><ul>"
               arrayattr.forEach(function(u){
                 attrlist+='<li style="text-align:left">'+u+'</li>';
-                console.log("ATTRRR");
               });
 
               attrlist+='</ul></div>'
@@ -1204,10 +580,7 @@ $(function(){
 
               }
               )
-              // alert("The following attributes have lists as value, and they will not be plotted:\\n- "+Array.from(arrayattr).join('\\n- '))
             }
-            console.log("ARRAYATTR")
-            console.log(arrayattr)
             arrayattr.forEach(function(elem){
               console.log(elem+" will be removed, it's an object");
 
@@ -1216,21 +589,10 @@ $(function(){
             });
             numattr = new Set(numattr);
             catattr = new Set(catattr);
-            console.log("NUMATTR")
-            console.log(numattr)
+
             AddToAttrDropdown(numattr, 'numeric', "node-numattributes")
 
-            console.log("CATATTR")
-            console.log(catattr)
             AddToAttrDropdown(catattr, 'categorical', "node-catattributes")
-
-            // // export button
-            // _.$('export-btn').addEventListener("click", function(e) {
-            //   var chain = filter.export();
-            //   console.log(chain);
-            //   _.$('dump').textContent = JSON.stringify(chain);
-            //   _.show('#dump');
-            // });
         }
 
         // Initialize the Filter API
@@ -1240,11 +602,9 @@ $(function(){
 
         function applyMinAttrFilter(e) {
           var v = e.target.value;
-          console.log(e)
           let attr_choice = $('#node-numattributes').val()
           total_nodes = s.graph.nodes().length
           survived_nodes = total_nodes
-          console.log("V: "+v);
 
           if (attr_choice == 'degree'){
             filter
@@ -1272,7 +632,6 @@ $(function(){
           }
         _.$('min-attr-val').textContent = v;
         _.$('survivors').textContent = "Nodes: "+survived_nodes+"/"+total_nodes;
-          console.log("Survivors: ", survived_nodes)
         }
         _.$('slider-attr').addEventListener("input", applyMinAttrFilter);  // for Chrome and FF
         _.$('slider-attr').addEventListener("change", applyMinAttrFilter); // for IE10+, that sucks
@@ -1280,7 +639,6 @@ $(function(){
 
         function AddToAttrDropdown(keyarray, attrtype, dest){
           let dropdown = $('#'+dest);
-          console.log(dropdown)
           if (attrtype == 'numeric'){
             dropdown.attr("onchange", "$('#slider-container').show();\\
                            let attr_choice = $('#node-numattributes').val();\\
@@ -1290,9 +648,6 @@ $(function(){
                             _.$('max-attr-value').textContent = maxvalue;\\
                             $('#reset-btn-numerical').show();\\
                              _.$('attr-slider-label').textContent = 'min \\"'+attr_choice+'\\": '")
-            // min degree
-            // _.$('slider-attr').max = maxDegree;
-            // _.$('max-attr-value').textContent = maxDegree;
           }else if(attrtype == 'categorical'){
             dropdown.attr("onchange", "let attr_choice = $('#node-catattributes').val();\\
                            console.log('Hai scelto '+attr_choice);\\
@@ -1301,10 +656,7 @@ $(function(){
                            FillMultiselect(attr_choice);\\
                            ")
           }
-          // dropdown.attr("onchange", 'console.log("changed '+attrtype+'")')
           for(var it = keyarray.values(), k= null; k=it.next().value; ){
-            console.log("EHILA "+k)
-            console.log(attrtype)
             dropdown.append($('<option></option>').attr('value', k).text(k.charAt(0).toUpperCase()+k.slice(1)))
           }
         }
@@ -1313,12 +665,12 @@ $(function(){
         function CalculateRange(attr){
           values = []
           null_values = []
-          console.log("I AM IN RANGE");
           _.$('survivors').textContent = '';
           _.$('min-attr-val').textContent = '0';
           s.graph.nodes().forEach(function(n) {
             n.color = default_Node_color;
             n.originalColor = default_Node_color;
+            design.apply();
           });
           _.$('resize-nodes-box').checked = false;
           _.$('slider-attr').value = 0;
@@ -1328,20 +680,17 @@ $(function(){
             s.graph.nodes().forEach(function(n) {
               maxDegree = Math.max(maxDegree, s.graph.degree(n.id));
             })
-            console.log("Max for attr "+attr+" is "+maxDegree)
             $('#resize-box-container').hide()
             return maxDegree
           }else{
             s.graph.nodes().forEach(function(n) {
               values.push(Number(n.attributes[attr]));
               if(n.attributes[attr] == null){
-                console.log("CAMBIA ORA");
                 n.originalColor = "#ededed"
                 n.color = "#ededed";
               }
             })
             s.refresh();
-            console.log("Max for attr "+attr+" is "+Math.max.apply(null, values.filter(Boolean)))
             $('#resize-box-container').show()
             return Math.max.apply(null, values.filter(Boolean))
           }
@@ -1374,21 +723,16 @@ $(function(){
           var colors = palette('mpn65', unique.length);
           var element = $('#multiselect-table');
           if(unique.length <=65){
-              console.log("CI SIAMO LENGTH A POSTO")
               for(u = 0; u < unique.length; u++){
                 element.append('<tr>\\
                     <td class="col-xs-1"><input type="checkbox" name="cat-checkbox" id="'+unique[u]+'-box" onclick="update(this.checked, hexc(document.getElementById(\\''+unique[u]+'-button\\').style[\\'background-color\\']) , \\''+attr+'\\', \\''+unique[u]+'\\')"></td>\\
                     <td>'+unique[u]+'</td>\\
                     <td><button id="'+unique[u]+'-button" style="width:15px; height:15px;"></button></td>\\
                   </tr>');
-                  console.log(u)
-                  console.log(unique.length)
 
-                   console.log("COLORE: "+colors[u])
                    new jscolor($('[id="'+unique[u]+'-button"]').last()[0], {valueElement:'valueElement',value:colors[u], onFineChange:'update($(\\'[id="'+unique[u]+'-box"]\\').is(\\':checked\\'), this, "'+attr+'" ,"'+unique[u]+'")'});
               }
           }else{
-            console.log("MALE, torppi values, addio")
             element.append('<span style="color:red"><i>Too many values, the attribute cannot be displayed</i></span>')
           }
 
@@ -1397,15 +741,9 @@ $(function(){
 
 
         function update(checked, jscolor, attr, val) {
-            console.log("Dsiplayed color is " + jscolor)
-// 'jscolor' instance can be used as a string
-        // document.getElementById('rect').style.backgroundColor = '#' + jscolor
-            console.log(checked + "CHOSE "+jscolor + " for " + attr + " "+ val)
             s.graph.nodes().forEach(function(n){
                 if(n.attributes[attr] == val){
                   if(checked == true){
-                    console.log("changing node ")
-                    console.log(n)
                     n.color = "#"+jscolor
                     n.originalColor = "#"+jscolor
                   }else{
@@ -1421,12 +759,8 @@ $(function(){
         function resetNumerical(){
           _.$('slider-attr').value = 0;
           _.$('min-attr-val').textContent = '0';
-          // _.$('resize-nodes-box').checked = false;
-          // $('#survivors').hide();
           _.$('survivors').textContent = '';
           filter.undo().apply();
-          // $('#node-numattributes').get(0).selectedIndex = 0;
-          // _.$('slider-label').textContent = ""
         }
 
 
@@ -1456,8 +790,6 @@ $(function(){
         for (i = 0; i < len; i++) {
             nodes[i].x = Math.random();
             nodes[i].y = Math.random();
-            // nodes[i].size = s.graph.degree(nodes[i].id);
-            // nodes[i].color = nodes[i].center ? '#333' : '#666';
         }
 
 
@@ -1477,15 +809,11 @@ $(function(){
         // We do the same for the edges, and we only keep
         // edges that have both extremities colored.
         s.bind('clickNode', function(e) {
-                console.log("NODE:")
-                console.log(e.data.node)
                 var nodeId = e.data.node.id,
                     toKeep = s.graph.nodeneighbors(nodeId);
                 toKeep[nodeId] = e.data.node;
-                console.log("Neighbors of "+nodeId+":")
                 s.graph.nodes().forEach(function(n) {
                   if (toKeep[n.id]){
-                    console.log(n)
                     n.color = "#ffa7a7";
                   }else{
                     n.color = '#ededed';
@@ -1497,7 +825,6 @@ $(function(){
 
                 s.graph.edges().forEach(function(e) {
                   if (toKeep[e.target] && (e.source == nodeId || e.target == nodeId)){
-                    console.log("coloring edge between "+e.source+" and "+e.target)
                     e.color = "#ffa7a7";
                     e.size = 0.3;
                   }else{
@@ -1510,12 +837,6 @@ $(function(){
                 // update effective.
                 s.refresh();
 
-                // var prefix = s.renderers[0].options.prefix;
-                // var node = e.data.node;
-                // var x = e.data.node[prefix + 'x'];
-                // var y = e.data.node[prefix + 'y'];
-
-                // Manually open a tooltip on a node:
                 var prefix = s.renderers[0].options.prefix;
                 var node = e.data.node;
                 var x = e.data.node[prefix + 'x'];
@@ -1533,23 +854,15 @@ $(function(){
 
         });
 
-        function showNode(node) {
-                console.log("do do do "+node.id)
-        }
-
 
         function paintSet(arg, dict){
-          console.log("in Paintset");
-          console.log(dict[0])
           var n_toKeep = dict[0][0].split(',');
           var e_toKeep = dict[0][1].split(';');
           var e_toKeep_ids = []
           var ids_to_mask = [];
           var labels_to_ids = {};
-          console.log(n_toKeep)
 
           s.graph.nodes().forEach(function(n){
-            console.log("Check "+n["label"])
             labels_to_ids[n["label"]]=n.id
 
             if(n_toKeep.includes(n["label"])){
@@ -1559,24 +872,15 @@ $(function(){
             }
           });
 
-          console.log("labels_to_ids")
-          console.log(labels_to_ids)
-          console.log(e_toKeep)
-          console.log(s.graph.edges())
-
           e_toKeep.forEach(function(e){
             var source = labels_to_ids[e.split('-')[0]]
             var target = labels_to_ids[e.split('-')[1]]
             e_toKeep_ids.push(source+"-"+target)
           });
-          console.log(e_toKeep_ids)
           s.graph.edges().forEach(function(e){
-            console.log(e)
             if(!e_toKeep_ids.includes(e.source+'-'+e.target)){
               e.color = '#fdfdfd';
             }
-            console.log(e.source)
-            console.log(e.target)
 
           });
 
@@ -1586,15 +890,11 @@ $(function(){
         // When searching
         function onSearch(query) {
                 var nodes = s.graph.nodes();
-                console.log(nodes);
-                console.log("QUERY :"+query);
                 var results = [];
                 var targetNodesId = [];
 
                 query.forEach(function(elem){
                   var r = lookupNodeByLabel(s, elem);
-                  console.log("RESULT TEMP")
-                  console.log(r)
                   if (r != undefined){
                     results.push(r);
                     targetNodesId.push(r.id)
@@ -1605,21 +905,11 @@ $(function(){
                 }else{
                   document.getElementById("errorspace").innerHTML = "";
                 }
-                console.log("FINAL RESULTS")
-                console.log(results)
                 var toKeep = {};
                 var coords = {'x':0, 'y':0}
                 results.forEach(function(result){
                   Object.assign(toKeep, s.graph.nodeneighbors(result.id));
                   toKeep[result.id] = result;
-                  console.log("ITERATION")
-                  console.log(result)
-
-                  console.log(result.id)
-                  console.log(toKeep)
-                  console.log("COORDS")
-                  console.log(result[s.camera.readPrefix + 'x']) //questo e' read_cam0:x
-                  console.log(result[s.camera.readPrefix + 'y'])
                   coords['x']+=result[s.camera.readPrefix + 'x']
                   coords['y']+=result[s.camera.readPrefix + 'y']
                 })
@@ -1649,23 +939,13 @@ $(function(){
                 });
 
                 s.graph.edges().forEach(function(e) {
-                  // console.log("EDGE SOURCE "+e.source)
-                  // console.log("EDGE target "+e.target)
-                  // console.log("RESULT "+result.id)
-                  // console.log(e.target == result.id)
-                  console.log(toKeep[e.target])
                   if (toKeep[e.target] && (targetNodesId.includes(e.target) || targetNodesId.includes(e.source))){
-                    console.log("drawing edge between "+e.source+" and "+e.target)
                     e.color = "#ffa7a7";
                     e.size = 0.3;
                   }else{
                     e.color = '#ededed';
                   }
                 });
-
-                console.log("AVG COORDS")
-                console.log(coords['x']/results.length)
-                console.log(coords['y']/results.length)
 
                 sigma.misc.animation.camera(
                   s.camera,
@@ -1693,7 +973,7 @@ $(function(){
             e.size = 0;
 
           });
-
+          design.apply();
           // Same as in the previous event:
           s.refresh();
         });
@@ -1707,33 +987,19 @@ $(function(){
 
         dragListener.bind('startdrag', function(event) {
           tooltips.close();
-          console.log(event);
         });
         dragListener.bind('drag', function(event) {
           tooltips.close();
-
-          console.log(event);
         });
         dragListener.bind('drop', function(event) {
-          console.log(event);
         });
         dragListener.bind('dragend', function(event) {
-          console.log(event);
         });
 
 
         function SearchByLabel(e) {
           var v = document.getElementById('labelInput').value.split(',')
-          console.log("MYQUERY")
-          console.log(v)
           onSearch(v)
-          // var c = e.target[e.target.selectedIndex].value;
-          // filter
-          //   .undo('node-category')
-          //   .nodesBy(function(n) {
-          //     return !c.length || n.attributes.acategory === c;
-          //   }, 'node-category')
-          //   .apply();
         }
 
         _.$('searchSubmit').addEventListener("click", SearchByLabel);  // for Chrome and FF
@@ -1776,57 +1042,50 @@ $(function(){
 
         }
 
-        // if (document.getElementById('Communities-results-pane') !== null){
-        //   document.getElementById('Communities-results-pane').style.visibility = 'hidden';
-        // }
-        // if (document.getElementById('Set-results-pane') !== null){
-        //   document.getElementById('Set-results-pane').style.visibility = 'hidden';
-        // }
-
-          // var s = new sigma()
-        console.log("REPORT")
-        console.log(reportData)
 
         for (var command in reportData){
-          console.log("BUILDING "+ command)
-          $('#'+command+'-results-pane').show();
-          document.getElementById(command+'-results-space').innerHTML += '<div class="buttons-div" id="'+command+'-section"></div>';
+          if(command!='Info'){
+                $('#'+command+'-results-pane').show();
+                document.getElementById(command+'-results-space').innerHTML += '<div class="buttons-div" id="'+command+'-section"></div>';
 
-          document.getElementById(command+'-section').innerHTML += '\\
-            <select \\
-                class="btn-secondary" id="dropdown-'+command+'-algorithm" \\
-                onchange="\\
-                  document.getElementById(\\'dropdown-'+command+'-run\\').style.visibility = \\'visible\\'; \\
-                  document.getElementById(\\''+command+'-buttons\\').style.visibility = \\'hidden\\'; \\
-                  $(\\'#'+command+'-solutions-pane\\').lobiPanel(\\'close\\'); \\
-                  var choice = getChoice(\\'dropdown-'+command+'-algorithm\\'); \\
-                  fillDropdown(\\'Run\\', Object.keys(reportData[\\''+command+'\\'][choice]), \\'dropdown-'+command+'-run\\')\\
-                "\\
-            >\\
-            </select>';
+                document.getElementById(command+'-section').innerHTML += '\\
+                  <select \\
+                      class="btn-secondary" id="dropdown-'+command+'-algorithm" \\
+                      onchange="\\
+                        document.getElementById(\\'dropdown-'+command+'-run\\').style.visibility = \\'visible\\'; \\
+                        document.getElementById(\\''+command+'-buttons\\').style.visibility = \\'hidden\\'; \\
+                        $(\\'#'+command+'-solutions-pane\\').lobiPanel(\\'close\\'); \\
+                        var choice = getChoice(\\'dropdown-'+command+'-algorithm\\'); \\
+                        fillDropdown(\\'Run\\', Object.keys(reportData[\\''+command+'\\'][choice]), \\'dropdown-'+command+'-run\\')\\
+                      "\\
+                  >\\
+                  </select>';
 
-          document.getElementById(command+'-section').innerHTML += '\\
-            <select \\
-                class="btn-secondary" id="dropdown-'+command+'-run" \\
-                onchange="\\
-                  var choice = getChoice(\\'dropdown-'+command+'-algorithm\\'); \\
-                  var choice2 = getChoice(\\'dropdown-'+command+'-run\\'); \\
-                  console.log(reportData[\\''+command+'\\'][choice][choice2]);\\
-                  paintButtons(\\''+command+'\\', reportData[\\''+command+'\\'][choice][choice2]);\\
-                "\\
-            >\\
-            </select><div id="'+command+'-buttons"></div>';
+                document.getElementById(command+'-section').innerHTML += '\\
+                  <select \\
+                      class="btn-secondary" id="dropdown-'+command+'-run" \\
+                      onchange="\\
+                        var choice = getChoice(\\'dropdown-'+command+'-algorithm\\'); \\
+                        var choice2 = getChoice(\\'dropdown-'+command+'-run\\'); \\
+                        console.log(reportData[\\''+command+'\\'][choice][choice2]);\\
+                        paintButtons(\\''+command+'\\', reportData[\\''+command+'\\'][choice][choice2]);\\
+                      "\\
+                  >\\
+                  </select><div id="'+command+'-buttons"></div>';
 
-          document.getElementById('dropdown-'+command+'-run').style.visibility = 'hidden';
-          fillDropdown('Algorithm', Object.keys(reportData[command]), 'dropdown-'+command+'-algorithm');
-          // console.log(reportData[command])
-          // console.log(findDepth(reportData[command]))
+                document.getElementById('dropdown-'+command+'-run').style.visibility = 'hidden';
+                fillDropdown('Algorithm', Object.keys(reportData[command]), 'dropdown-'+command+'-algorithm');
+          }else{
 
+                $('#info-space').html("<table id='info-table' class='table table-striped solutionstable'></table>")
+                for(key in reportData[command]){
+                    $('#info-table').append('<tr id="'+key+'-row">')
+                    $('#'+key+'-row').append('<td class="keycell metric">'+key+'</td>');
+                    $('#'+key+'-row').append('<td class="value-col">'+reportData[command][key]+'</td>');
+                    $('#info-table').append('</tr>');
+                }
+          }
         };
-        // load the graph
-        // s.graph.read(graph);
-        // call the plugin
-        // draw the graph
 
         function getChoice(dropd){
           var a = document.getElementById(dropd);
@@ -1852,13 +1111,9 @@ $(function(){
 
 
         function generateImage(mouse, clip) {
-          console.log(mouse)
-          console.log(clip)
+
           var size = 0;
           var color = "#FFFFFF";
-          console.log(size);
-          console.log(color);
-          console.log(s.renderers)
           sigma.plugins.image(s, s.renderers[0], {
             download: true,
             size: size,
@@ -1888,7 +1143,7 @@ $(function(){
               legendPlugin = sigma.plugins.legend(s, true);
           //    legendPlugin.removeAllWidgets();
               legendPlugin.setExternalCSS(['http://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css']);
-              //legendPlugin.setPlacement('right');
+              legendPlugin.setPlacement('right');
               //legendPlugin.addWidget('edge', 'size').setUnit('%');
           //    textWidget = legendPlugin.addTextWidget('some text');
           //    textWidget.setText('Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius ante ac orci ullamcorper porttitor. Curabitur euismod, arcu quis eleifend faucibus, tellus urna hendrerit enim, sit amet lacinia felis massa quis nibh.');
@@ -1922,37 +1177,16 @@ $(function(){
         applyRandom();
 
   </script>
-  <!-- <div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="warningModalLabel">Modal title</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          ...
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
-        </div>
-      </div>
-    </div>
-  </div> -->
-
 </body>
 
 </html>
-
-
 
 """
 
 
 
 css_template = u"""
+
 
 #network-graph {
       top: 0;
@@ -2181,5 +1415,237 @@ input[type=checkbox] {
     border: 1px solid #ceead9;
 }
 
+  #network-graph {
+    position: absolute;
+    top: 180px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  body {
+    color: #333;
+    font-size: 14px;
+    font-family: Lato, sans-serif;
+  }
+
+  #control-pane {
+    /* top: 10px; */
+    /*bottom: 10px;*/
+    right: 10px;
+    position: absolute;
+    width: 230px;
+    /* background-color: rgb(249, 247, 237); */
+    /* box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3); */
+  }
+  #control-pane > div {
+    /* margin: 10px; */
+    overflow-x: auto;
+  }
+  input[type="range"] {
+    display: inline-block;
+  }
+
+  #layouts-pane {
+    /* top: 335px !important; */
+    /*bottom: 10px;*/
+    right: 10px;
+    position: absolute;
+    width: 230px;
+    /* background-color: rgb(249, 247, 237); */
+    /* box-shadow: 0 2px 6px rgba(16, 86, 0, 0.3); */
+  }
+
+  #layouts-pane, .panel-minimized{
+    position: unset;
+  }
+
+  #control-pane, .panel-minimized{
+    position: unset;
+  }
+
+  #results-pane{
+    /* left: 23px !important;
+    top: 15.5px !important; */
+    z-index: 10001 !important;
+    width: 450px !important;
+    /* right: auto !important; */
+    height: 340px !important;
+    /* bottom: auto !important; */
+    background-color: rgb(249, 247, 237);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  #results-pane > div {
+    /* margin: 10px; */
+    margin-top: 5px;
+    /* overflow-x: auto; */
+  }
+
+  .buttons-div{
+    display: inline-flex;
+  }
+
+  .buttons-div > select{
+    flex:1 1 auto;
+    height: 27px;
+    width: auto;
+    /* border:1px red solid; */
+    text-align:center;
+
+    margin:5px;
+  }
+
+  .buttons-div > div{
+    flex:1 1 auto;
+    /* border:1px red solid; */
+    text-align:center;
+  }
+
+  .buttons-div > div button{
+    flex:1 1 auto;
+    height: 27px;
+    width: auto;
+    /* border:1px red solid; */
+    text-align:center;
+
+    margin:5px;
+  }
+
+  .command-header{
+    color: #96764d;
+    font-size: 22px;
+  }
+  .line {
+    clear: both;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 12px 0 0 0;
+    border-bottom: 1px solid #aac789;
+    background: transparent;
+  }
+  h2, h3, h4 {
+    padding: 0;
+    font-variant: small-caps;
+  }
+  .green {
+    color: #437356;
+  }
+  h2.underline {
+    color: #437356;
+    /* background: #f4f0e4; */
+    margin: 0;
+    border-radius: 2px;
+    /* padding: 8px 12px; */
+    font-weight: 700;
+  }
+  .hidden {
+    display: none;
+    visibility: hidden;
+  }
+
+  input[type=range] {
+    width: 160px;
+  }
+
+  .sigma-tooltip {
+    max-width: 440px;
+    max-height: 680px;
+    background-color: rgba(249, 247, 237, 0.95);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border-radius: 6px;
+  }
+
+  .sigma-tooltip-header {
+    font-variant: small-caps;
+    font-size: 120%;
+    color: #437356;
+    border-bottom: 1px solid #aac789;
+    padding: 10px;
+  }
+
+  .sigma-tooltip-body {
+    padding: 10px;
+  }
+
+  .sigma-tooltip-body th {
+    color: #999;
+    text-align: left;
+  }
+
+  .sigma-tooltip-footer {
+    padding: 10px;
+    border-top: 1px solid #aac789;
+  }
+
+  .sigma-tooltip > .arrow {
+    border-width: 10px;
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+  }
+
+  .sigma-tooltip.top {
+    margin-top: -12px;
+  }
+  .sigma-tooltip.top > .arrow {
+    left: 50%;
+    bottom: -10px;
+    margin-left: -10px;
+    border-top-color: rgb(249, 247, 237);
+    border-bottom-width: 0;
+  }
+
+  .sigma-tooltip.bottom {
+    margin-top: 12px;
+  }
+  .sigma-tooltip.bottom > .arrow {
+    left: 50%;
+    top: -10px;
+    margin-left: -10px;
+    border-bottom-color: rgb(249, 247, 237);
+    border-top-width: 0;
+  }
+
+  .sigma-tooltip.left {
+    margin-left: -12px;
+  }
+  .sigma-tooltip.left > .arrow {
+    top: 50%;
+    right: -10px;
+    margin-top: -10px;
+    border-left-color: rgb(249, 247, 237);
+    border-right-width: 0;
+  }
+
+  .sigma-tooltip.right {
+    margin-left: 12px;
+  }
+  .sigma-tooltip.right > .arrow {
+    top: 50%;
+    left: -10px;
+    margin-top: -10px;
+    border-right-color: rgb(249, 247, 237);
+    border-left-width: 0;
+  }
+
+  .sigma-tooltip > .sigma-tooltip-body > table > tbody > tr > td {
+    padding-left: 10px;
+    word-break: break-word;
+  }
+
+.swal2-container{
+  z-index:99999999;
+}
+
+.alertmodal{
+  border: 2px solid #ceead9;
+}
+
+.swal2-shown{
+        z-index: 999999 !important;
+}
 
 """

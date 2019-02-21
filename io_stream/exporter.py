@@ -259,7 +259,7 @@ class PyntacleExporter:
     def JSON(graph, file=None, prefix=None):
         """
         Write the igraph.Graph object to a JSON file, compliant with Pyntacle viewer.
-        :param igraph.Graph graph: an `igraph.Graph` object obtained from Pyntacle. See `Pyntacle Minimum Requirements`
+        :param igraph.Graph graph: an `igraph.Graph` object obtained from Pyntacle. See `Py ntacle Minimum Requirements`
         for the object description.
         :param str file: a valid path to a file. If the directory is not specified, the current directory will be used.
         :param str prefix: a string that is printed before the JSON string. Useful to assign the JSON dictionary to a
@@ -282,7 +282,7 @@ class PyntacleExporter:
             print(v_id, v['name'])
             v_attributes = v.attributes()
             if 'parent' in v_attributes:
-                v_attributes['parent'] = ','.join(v_attributes['parent'])
+                v_attributes['parent'] = ', '.join(v_attributes['parent'])
             print("ATTRIBUTI IN EXPORT")
             print(v_attributes)
             parent = ','.join(v_attributes['parent'])
